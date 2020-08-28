@@ -41,16 +41,34 @@ def get_vehicle_id():
     return vehicle_id_list
 
 
-def get_edge_vehicle_id(id):
-    """从所有车辆ID中随机选择一些车辆作为边缘节点
+def get_edge_vehicle_id():
+    """从所有车辆ID中随机选择一些车辆作为边缘节点, 边缘节点在所有时间内都出现
     :argument:
-        id                  时间段内所有车ID, List
         edge_vehicle_num    边缘车辆节点数量, int
+        experiment_start_time   实验开始时间, int
+        experiment_last_time    实验持续时间, int
     :return
         edge_vehicle_id     边缘车辆节点ID, List
+    :raise:
+        ValueError("from init_vehicles.get_edge_vehicle_id() 满足条件的边缘节点车辆数量少于需求数量")
     """
-    edge_vehicle_id = random.sample(id, settings.edge_vehicle_num)
-    return edge_vehicle_id
+    time_id_set = []
+    for i in range(settings.experiment_start_time, settings.experiment_start_time + settings.experiment_last_time):
+        time_df = get_vehicle_trace_in_time(i)
+        time_id = set(time_df["id"].drop_duplicates().tolist())
+        time_id_set.append(time_id)
+    intersection_id_set = time_id_set[0]
+    for id_set in time_id_set:
+        intersection_id_set = intersection_id_set & id_set
+    id = list(intersection_id_set)
+    # print("----------------------------------------------------------")
+    # print(id)
+    # print("----------------------------------------------------------")
+    if len(id) >= settings.edge_vehicle_num:
+        edge_vehicle_id = random.sample(id, settings.edge_vehicle_num)
+        return edge_vehicle_id
+    else:
+        raise ValueError("from init_vehicles.get_edge_vehicle_id() 满足条件的边缘节点车辆数量少于需求数量")
 
 
 def get_customer_vehicle_id(edge_vehicle_id, id):
@@ -82,7 +100,7 @@ def get_vehicle_location(vehicle_id, time):
     df = get_vehicle_trace()
     vehicle_df = df[(df["id"] == vehicle_id)]
     time_df = vehicle_df[(vehicle_df["time"] == time)]
-    print(time_df)
+    # get_vehicle_locationprint(time_df)
     x = float(time_df["x"])
     y = float(time_df["y"])
     # print("----------------------------------------------------------")
@@ -114,7 +132,7 @@ if __name__ == '__main__':
     print("Vehicle ID")
     print(id)
     print(type(id))
-    edge_id = get_edge_vehicle_id(id)
+    edge_id = get_edge_vehicle_id()
     customer_id = get_customer_vehicle_id(edge_id, id)
     print("*" * 32)
     print("Edge Vehicle ID")
