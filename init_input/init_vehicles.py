@@ -96,17 +96,23 @@ def get_vehicle_location(vehicle_id, time):
     :return
         x           车辆位置 x, double or float
         y           车辆位置 y, double or float
+    OR
+        None        当车辆在time 时没有出现时
     """
     df = get_vehicle_trace()
     vehicle_df = df[(df["id"] == vehicle_id)]
-    time_df = vehicle_df[(vehicle_df["time"] == time)]
-    # get_vehicle_locationprint(time_df)
-    x = float(time_df["x"])
-    y = float(time_df["y"])
-    # print("----------------------------------------------------------")
-    # print(int(time_df["id"]), int(time_df["time"]), float(time_df["x"]), float(time_df["y"]))
-    # print("----------------------------------------------------------")
-    return x, y
+    if time in vehicle_df["time"].tolist():
+        time_df = vehicle_df[(vehicle_df["time"] == time)]
+        # get_vehicle_locationprint(time_df)
+        x = float(time_df["x"])
+        y = float(time_df["y"])
+        # print("----------------------------------------------------------")
+        # print(int(time_df["id"]), int(time_df["time"]), float(time_df["x"]), float(time_df["y"]))
+        # print("----------------------------------------------------------")
+        return x, y
+    else:
+        return
+
 
 
 def get_vehicle_trace_in_time(time):
