@@ -38,14 +38,14 @@ def get_sub_channel_transmission_power(transmission_power_max, channel_num):
     return sub_channel_transmission_power
 
 
-def init_edge_node():
+def init_fixed_edge_node():
     """初始化所有固定边缘节点，包含了基站与RSU
     :return
         edge_node   固定边缘节点，list
     Example
 
     """
-    edge_node = []
+    fixed_edge_node = []
     for i in range(settings.base_station_num):
         base_station = {"id": i,
                         "x": settings.base_station_x[i],
@@ -58,7 +58,7 @@ def init_edge_node():
                         "channel_power": get_sub_channel_transmission_power(
                             transmission_power_max=settings.base_station_transmission_power_max,
                             channel_num=settings.base_station_sub_channel_num)}
-        edge_node.append(base_station)
+        fixed_edge_node.append(base_station)
     for j in range(settings.rsu_num):
         rsu = {"id": settings.base_station_num + j,
                "x": settings.rsu_x[j],
@@ -71,8 +71,8 @@ def init_edge_node():
                "channel_power": get_sub_channel_transmission_power(
                    transmission_power_max=settings.rsu_transmission_power_max,
                    channel_num=settings.rsu_sub_channel_num)}
-        edge_node.append(rsu)
-    return edge_node
+        fixed_edge_node.append(rsu)
+    return fixed_edge_node
 
 
 def init_edge_vehicle_node(edge_vehicle_num, edge_vehicle_id):
@@ -107,7 +107,7 @@ def init_edge_vehicle_node(edge_vehicle_num, edge_vehicle_id):
 
 
 if __name__ == '__main__':
-    fixed_edge_node = init_edge_node()
+    fixed_edge_node = init_fixed_edge_node()
     edge_vehicle_id = get_edge_vehicle_id()
     mobile_edge_node = init_edge_vehicle_node(edge_vehicle_num=settings.edge_vehicle_num,
                                               edge_vehicle_id=edge_vehicle_id)

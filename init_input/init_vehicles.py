@@ -114,7 +114,6 @@ def get_vehicle_location(vehicle_id, time):
         return
 
 
-
 def get_vehicle_trace_in_time(time):
     """根据时刻time 得到时间time上所有车辆位置, 该数据可用于得到每个时间片上客户车辆的位置
     :argument

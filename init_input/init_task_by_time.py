@@ -49,6 +49,7 @@ def init_task_by_time(customer_vehicle_id, time):
     """
     task_list = []
     # tqdm 进度条
+    print("init_task progressing " + str(time))
     for id in tqdm(customer_vehicle_id):
         vehicle_location = get_vehicle_location(id, time)
         # vehicle is not none
