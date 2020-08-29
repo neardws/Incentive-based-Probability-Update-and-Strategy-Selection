@@ -114,3 +114,4 @@ EXPERIMENT_START_TIME = 1
 # 实验持续时间
 EXPERIMENT_LAST_TIME = 10
 
+EXPERIMENT_FILE_NAME = "../experiment_data/experiment_file_name.txt"
