@@ -51,7 +51,6 @@ def read_experiment():
                                               distance_matrix=fixed_distance_matrix_list[0])
         print_to_console("task_id", task_id)
 
-
         task_time_limitation_under_edge_node = get_task_time_limitation_under_edge_node(node_type="BaseStation",
                                                                                         node_id=1,
                                                                                         distance_matrix_list=fixed_distance_matrix_list,
@@ -65,7 +64,7 @@ def init_useful_channel(node_type, node_id, fixed_edge_node, edge_vehicle_node):
         node = fixed_edge_node[node_id]
         node_channel = node["sub_channel"]
         channel_status = np.zeros(len(node_channel))
-        useful_channel = {"node_channel":node_channel, "channel_status": channel_status}
+        useful_channel = {"node_channel": node_channel, "channel_status": channel_status}
         return useful_channel
     elif node_type == "RSU":
         node = fixed_edge_node[node_id + settings.base_station_num]
@@ -108,7 +107,6 @@ def get_usable_channel_list(useful_channel):
 
 
 def generator_of_strategy_list(usable_channel_list, task_id_under_edge_node, task_time_limitation_under_edge_node):
-
     # x 轴，节点当前可用的信道
     x_length = len(usable_channel_list)
 
@@ -160,17 +158,6 @@ def random_channel_fading_gain():
     return channel_fading_gain
 
 
-def compute_SINR(channel, task_id, strategy, other_node_strategy_list, distance):
-    SINR = 0
-
-    noise = settings.WHITE_GAUSSIAN_NOISE
-    numerator = np.square(random_channel_fading_gain()) * settings.ANTENNA_CONSTANT * np.power(distance, 0 - settings.PATH_LOSS_EXPONENT)
-
-    denominator = 0 # TODO
-
-    return SINR
-
-
 def compute_signal_list(channel,
                         task_id,
                         fixed_node,
@@ -193,7 +180,8 @@ def compute_signal_list(channel,
                     distance = fixed_distance_matrix[node_no][task_id]
                     channel_fading_gain = random_channel_fading_gain()
                     transmission_power = fixed_node[node_no]["channel_power"]
-                    signal_value = np.square(channel_fading_gain) * antenna_constant * np.power(distance, 0 - path_loss_exponent) * transmission_power
+                    signal_value = np.square(channel_fading_gain) * antenna_constant * np.power(distance,
+                                                                                                0 - path_loss_exponent) * transmission_power
                     signal = {"node_type": settings.NODE_TYPE_FIXED,
                               "node_id": node_no,
                               "signal": signal_value}
@@ -208,13 +196,53 @@ def compute_signal_list(channel,
                     distance = mobile_distance_matrix[node_no][task_id]
                     channel_fading_gain = random_channel_fading_gain()
                     transmission_power = mobile_node[node_no]["channel_power"]
-                    signal_value = np.square(channel_fading_gain) * antenna_constant * np.power(distance, 0 - path_loss_exponent) * transmission_power
+                    signal_value = np.square(channel_fading_gain) * antenna_constant * np.power(distance,
+                                                                                                0 - path_loss_exponent) * transmission_power
                     signal = {"node_type": settings.NODE_TYPE_MOBILE,
                               "node_id": node_no,
                               "signal": signal_value}
                     signal_list.append(signal)
 
     return signal_list
+
+
+def compute_SINR(node_type,
+                 node_no,
+                 channel,
+                 task_id,
+                 fixed_node,
+                 mobile_node,
+                 usable_channel_list_under_fixed_node,
+                 usable_channel_list_under_mobile_node,
+                 fixed_distance_matrix,
+                 mobile_distance_matrix):
+    SINR = 0
+
+    white_gaussian_noise = settings.WHITE_GAUSSIAN_NOISE
+
+    signal = 0
+    interference = 0
+
+    signal_list = compute_signal_list(channel=channel,
+                                      task_id=task_id,
+                                      fixed_node=fixed_node,
+                                      mobile_node=mobile_node,
+                                      usable_channel_list_under_fixed_node=usable_channel_list_under_fixed_node,
+                                      usable_channel_list_under_mobile_node=usable_channel_list_under_mobile_node,
+                                      fixed_distance_matrix=fixed_distance_matrix,
+                                      mobile_distance_matrix=mobile_distance_matrix)
+    for signal_dict in signal_list:
+        if signal_dict["node_type"] == node_type:
+            if signal_dict["node_no"] == node_no:
+                signal = signal_dict["signal"]
+            else:
+                interference += signal_dict["signal"]
+        else:
+            interference += signal_dict["signal"]
+
+    SINR = signal / (interference + white_gaussian_noise)
+
+    return SINR
 
 
 def compute_task_transmission_data(task_id_list, strategy):
