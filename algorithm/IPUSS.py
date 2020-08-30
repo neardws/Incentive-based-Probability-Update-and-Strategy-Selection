@@ -28,51 +28,20 @@ def print_to_console(msg, object):
     print(type(object))
 
 
-def read_experiment():
-    pickle_file = Path(load_pickle(4))
-    with pickle_file.open("rb") as fp:
-        fixed_edge_node = pickle.load(fp)
-        print_to_console("fixed_edge_node", fixed_edge_node)
-
-        edge_vehicle_node = pickle.load(fp)
-        print_to_console("edge_vehicle_node", edge_vehicle_node)
-
-        task_by_time_list = pickle.load(fp)
-        print_to_console("task_by_time_list", task_by_time_list)
-
-        fixed_distance_matrix_list = pickle.load(fp)
-        print_to_console("fixed_distance_matrix_list", fixed_distance_matrix_list)
-
-        mobile_distance_matrix_list = pickle.load(fp)
-        print_to_console("mobile_distance_matrix_list", mobile_distance_matrix_list)
-
-        task_id = get_task_id_under_edge_node(node_type="BaseStation",
-                                              node_id=1,
-                                              distance_matrix=fixed_distance_matrix_list[0])
-        print_to_console("task_id", task_id)
-
-        task_time_limitation_under_edge_node = get_task_time_limitation_under_edge_node(node_type="BaseStation",
-                                                                                        node_id=1,
-                                                                                        distance_matrix_list=fixed_distance_matrix_list,
-                                                                                        task_list=task_by_time_list[0])
-
-        print_to_console("task_time_limitation_under_edge_node", task_time_limitation_under_edge_node)
-
-
 def init_useful_channel(node_type, node_id, fixed_edge_node, edge_vehicle_node):
-    if node_type == "BaseStation":
+    if node_type == settings.NODE_TYPE_BASE_STATION:
         node = fixed_edge_node[node_id]
         node_channel = node["sub_channel"]
         channel_status = np.zeros(len(node_channel))
         useful_channel = {"node_channel": node_channel, "channel_status": channel_status}
         return useful_channel
-    elif node_type == "RSU":
+    elif node_type == settings.NODE_TYPE_RSU:
         node = fixed_edge_node[node_id + settings.base_station_num]
         node_channel = node["sub_channel"]
         channel_status = np.zeros(len(node_channel))
         useful_channel = {"node_channel": node_channel, "channel_status": channel_status}
         return useful_channel
-    elif node_type == "Vehicle":
+    elif node_type == settings.NODE_TYPE_VEHICLE:
         node = edge_vehicle_node[node_id]
         node_channel = node["sub_channel"]
         channel_status = np.zeros(len(node_channel))
@@ -89,12 +58,20 @@ def update_useful_channel(strategy, useful_channel):
             useful_channel["channel_status"][i] = channel_time
 
 
-def get_usable_channel_list(useful_channel):
+def next_time_slot_useful_channel(useful_channel):
     # 下一个时间片，对其自减
     for i in range(len(useful_channel)):
         if useful_channel["channel_status"][i] != 0:
             useful_channel["channel_status"][i] -= 1
 
+
+def get_usable_channel_list(useful_channel):
+    """
+    :argument
+        useful_channel
+    :return
+        usable_channel_list     当前可用的信道
+    """
     usable_channel_list = []
 
     channel_status = useful_channel["channel_status"]
@@ -111,16 +88,8 @@ def generator_of_strategy_list(usable_channel_list, task_id_under_edge_node, tas
     x_length = len(usable_channel_list)
 
     # y 轴, 节点的所有任务数
-    # task_id = get_task_id_under_edge_node(node_type=node_type,
-    #                                       node_id=node_id,
-    #                                       distance_matrix=distance_matrix_list[time])
     y_length = len(task_id_under_edge_node)
 
-    # task_time_limitation_under_edge_node = get_task_time_limitation_under_edge_node(node_type="BaseStation",
-    #                                                                                 node_id=1,
-    #                                                                                 distance_matrix_list=distance_matrix_list,
-    #                                                                                 task_list=task_by_time_list[
-    #                                                                                     time - 1])
     j_strategy_list = [np.zeros(2)]
 
     for j in range(y_length):
@@ -140,7 +109,7 @@ def generator_of_strategy_list(usable_channel_list, task_id_under_edge_node, tas
 
 
 def generator_of_strategy_selection_probability(strategy_list_length):
-    strategy_selection_probability = list(repeat("0.5", strategy_list_length))
+    strategy_selection_probability = list(repeat(0.5, strategy_list_length))
     return strategy_selection_probability
 
 
@@ -162,8 +131,8 @@ def compute_signal_list(channel,
                         task_id,
                         fixed_node,
                         mobile_node,
-                        usable_channel_list_under_fixed_node,
-                        usable_channel_list_under_mobile_node,
+                        useful_channel_list_under_fixed_node,
+                        useful_channel_list_under_mobile_node,
                         fixed_distance_matrix,
                         mobile_distance_matrix):
     signal_list = []
@@ -171,9 +140,9 @@ def compute_signal_list(channel,
     antenna_constant = settings.ANTENNA_CONSTANT
     path_loss_exponent = settings.PATH_LOSS_EXPONENT
 
-    for node_no, usable_channel in enumerate(usable_channel_list_under_fixed_node):
-        node_channel = usable_channel["node_channel"]
-        channel_status = usable_channel["channel_status"]
+    for node_no, useful_channel in enumerate(useful_channel_list_under_fixed_node):
+        node_channel = useful_channel["node_channel"]
+        channel_status = useful_channel["channel_status"]
         for i, channel_no in enumerate(node_channel):
             if channel_no == channel:
                 if channel_status[i] > 0:
@@ -187,9 +156,9 @@ def compute_signal_list(channel,
                               "signal": signal_value}
                     signal_list.append(signal)
 
-    for node_no, usable_channel in enumerate(usable_channel_list_under_mobile_node):
-        node_channel = usable_channel["node_channel"]
-        channel_status = usable_channel["channel_status"]
+    for node_no, useful_channel in enumerate(useful_channel_list_under_mobile_node):
+        node_channel = useful_channel["node_channel"]
+        channel_status = useful_channel["channel_status"]
         for i, channel_no in enumerate(node_channel):
             if channel_no == channel:
                 if channel_status[i] > 0:
@@ -212,8 +181,8 @@ def compute_SINR(node_type,
                  task_id,
                  fixed_node,
                  mobile_node,
-                 usable_channel_list_under_fixed_node,
-                 usable_channel_list_under_mobile_node,
+                 useful_channel_list_under_fixed_node,
+                 useful_channel_list_under_mobile_node,
                  fixed_distance_matrix,
                  mobile_distance_matrix):
     SINR = 0
@@ -227,8 +196,8 @@ def compute_SINR(node_type,
                                       task_id=task_id,
                                       fixed_node=fixed_node,
                                       mobile_node=mobile_node,
-                                      usable_channel_list_under_fixed_node=usable_channel_list_under_fixed_node,
-                                      usable_channel_list_under_mobile_node=usable_channel_list_under_mobile_node,
+                                      useful_channel_list_under_fixed_node=useful_channel_list_under_fixed_node,
+                                      useful_channel_list_under_mobile_node=useful_channel_list_under_mobile_node,
                                       fixed_distance_matrix=fixed_distance_matrix,
                                       mobile_distance_matrix=mobile_distance_matrix)
     for signal_dict in signal_list:
@@ -251,13 +220,13 @@ def compute_task_transmission_data(task_id_list,
                                    node_no,
                                    fixed_node,
                                    mobile_node,
-                                   usable_channel_list_under_fixed_node,
-                                   usable_channel_list_under_mobile_node,
+                                   useful_channel_list_under_fixed_node,
+                                   useful_channel_list_under_mobile_node,
                                    fixed_distance_matrix,
                                    mobile_distance_matrix):
     sub_channel_bandwidth = settings.SUB_CHANNEL_BANDWIDTH
 
-    task_transmission_data = []
+    task_transmission_data_list = []
     for task_id in task_id_list:
         task_data_size = 0
         [x, y] = strategy.shape
@@ -270,15 +239,58 @@ def compute_task_transmission_data(task_id_list,
                                     task_id=task_id,
                                     fixed_node=fixed_node,
                                     mobile_node=mobile_node,
-                                    usable_channel_list_under_fixed_node=usable_channel_list_under_fixed_node,
-                                    usable_channel_list_under_mobile_node=usable_channel_list_under_mobile_node,
+                                    useful_channel_list_under_fixed_node=useful_channel_list_under_fixed_node,
+                                    useful_channel_list_under_mobile_node=useful_channel_list_under_mobile_node,
                                     fixed_distance_matrix=fixed_distance_matrix,
                                     mobile_distance_matrix=mobile_distance_matrix)
                 channel_data_size = task_time * sub_channel_bandwidth * np.log2(1 + SINR)
                 task_data_size += channel_data_size
-        task_transmission_data.append(task_data_size)
+        task_transmission_data = {"task_id": task_id,
+                                  "task_data_size": task_data_size}
+        task_transmission_data_list.append(task_transmission_data)
 
-    return task_transmission_data
+    return task_transmission_data_list
+
+
+def compute_task_is_finished(task_list, task_transmission_data_list_of_all_nodes):
+    finished = np.zeros(len(task_list))
+
+    task_size = np.zeros(len(task_list))
+
+    for task_transmission_data_list in task_transmission_data_list_of_all_nodes:
+        for task_transmission_data in task_transmission_data_list:
+            task_id = task_transmission_data["task_id"]
+            task_data_size = task_transmission_data["task_data_size"]
+            task_size[task_id] += task_data_size
+
+    for i, size in enumerate(task_size):
+        task_need_size = task_list[i]["task_size"]
+        if size >= task_need_size * 8 * 1024 * 1024:
+            finished[i] = 1
+
+    return finished
+
+
+def compute_potential_value(task_id_list_under_edge_node, finished):
+    potential_value = 0
+    for task_id in task_id_list_under_edge_node:
+        if finished[task_id] == 1:
+            potential_value += 1
+    return potential_value
+
+
+def compute_probability_update_value(potential_value, max_potential_value):
+    probability_update_value = (potential_value - max_potential_value) / max_potential_value
+    return probability_update_value
+
+
+def compute_updated_probability(origin_probability, learning_rate, probability_update_value):
+    if probability_update_value >= 0:
+        new_probability = origin_probability + (1 - origin_probability) * learning_rate * probability_update_value
+        return new_probability
+    else:
+        new_probability = origin_probability - origin_probability * learning_rate * probability_update_value
+        return new_probability
 
 
 # def get_strategy(x_length, y_length, task_time_limitation_under_edge_node):
@@ -301,16 +313,16 @@ def compute_task_transmission_data(task_id_list,
 #     return strategy_list
 
 if __name__ == '__main__':
-    # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    # generator_of_strategy_selection_probability(1000000000)
-    # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    generator_of_strategy_selection_probability(1000000000)
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     # print(generator_of_strategy_selection_probability(100000000))
     # read_experiment()
-    print(random_channel_fading_gain())
-    print("*" * 32)
-    noise = settings.WHITE_GAUSSIAN_NOISE
-    print(noise)
-    print(type(noise))
+    # print(random_channel_fading_gain())
+    # print("*" * 32)
+    # noise = settings.WHITE_GAUSSIAN_NOISE
+    # print(noise)
+    # print(type(noise))
     # x_length = 5
     # y_length = 4
     # task_time_limitation_under_edge_node = [3, 2, 6, 2]
