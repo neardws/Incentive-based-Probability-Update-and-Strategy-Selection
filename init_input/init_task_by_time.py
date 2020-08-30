@@ -56,12 +56,14 @@ def init_task_by_time(customer_vehicle_id, time):
         if vehicle_location:
             vehicle_x = vehicle_location[0]
             vehicle_y = vehicle_location[1]
-            task = {"task_id": id,
-                    "x": vehicle_x,
-                    "y": vehicle_y,
-                    "data_size": get_random_task_data_size(),
-                    "deadline": get_random_task_deadline()}
-            task_list.append(task)
+            random_num = random.random()
+            if random_num > 0.7:
+                task = {"task_id": id,
+                        "x": vehicle_x,
+                        "y": vehicle_y,
+                        "data_size": get_random_task_data_size(),
+                        "deadline": get_random_task_deadline()}
+                task_list.append(task)
     return task_list
 
 

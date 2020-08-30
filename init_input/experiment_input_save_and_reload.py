@@ -26,17 +26,24 @@ def get_unique_file_name():
     return unique_file_name
 
 
-def save_pickle():
+def save_pickle(fixed_edge_node,
+                edge_vehicle_node,
+                task_by_time_list,
+                fixed_distance_matrix_list,
+                mobile_distance_matrix_list,
+                ):
     file_name = get_unique_file_name()
     txt_file = Path(settings.experiment_file_name)
     with txt_file.open('a+', encoding='utf-8') as fp:
         fp.write(file_name + "\n")
     pickle_file = Path(file_name)
-    m = 1
-    y = "sfsfew"
     with pickle_file.open("wb") as fp:
-        pickle.dump(m, fp)
-        pickle.dump(y, fp)
+        pickle.dump(fixed_edge_node, fp)
+        pickle.dump(edge_vehicle_node, fp)
+        pickle.dump(task_by_time_list, fp)
+        pickle.dump(fixed_distance_matrix_list, fp)
+        pickle.dump(mobile_distance_matrix_list, fp)
+        return True
 
 
 def load_pickle(input_number):
@@ -50,11 +57,13 @@ def load_pickle(input_number):
     print(file_name)
     pickle_file = Path(file_name)
     if pickle_file.exists():
-        with pickle_file.open("rb") as fp:
-            m = pickle.load(fp)
-            print(m)
-            y = pickle.load(fp)
-            print(y)
+        return file_name
+        # with pickle_file.open("rb") as fp:
+        #     fixed_edge_node = pickle.load(fp)
+        #     edge_vehicle_node = pickle.load(fp)
+        #     task_by_time_list = pickle.load(fp)
+        #     fixed_distance_matrix_list = pickle.load(fp)
+        #     mobile_distance_matrix_list = pickle.load(fp)
     else:
         raise FileNotFoundError("from init_input.experiment_input_save_and_reload Pickle File not found")
 

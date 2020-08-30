@@ -44,7 +44,7 @@ TRANSMISSION_POWER = 40
 BASE_STATION_NUM = 2
 RSU_NUM = 9
 EDGE_VEHICLE_NUM = 7
-SUB_CHANNEL_NUM = 100
+SUB_CHANNEL_NUM = 30
 
 # 基站位置
 BASE_STATION_X = [800, 2000]
@@ -65,23 +65,23 @@ RSU_TRANSMISSION_POWER_MAX = 5
 EDGE_VEHICLE_TRANSMISSION_POWER_MAX = 1
 
 # 边缘节点信道数量
-BASE_STATION_SUB_CHANNEL_NUM = 80
-RSU_SUB_CHANNEL_NUM = 50
-EDGE_VEHICLE_SUB_CHANNEL_NUM = 30
+BASE_STATION_SUB_CHANNEL_NUM = 10
+RSU_SUB_CHANNEL_NUM = 10
+EDGE_VEHICLE_SUB_CHANNEL_NUM = 10
 
-# 子信道带宽 1mhz
-SUB_CHANNEL_BANDWIDTH = 1000
+# 子信道带宽 50Khz = 5*10^4 Hz
+SUB_CHANNEL_BANDWIDTH = 5e4
 
 """##################################
 #  vehicular transmission task settings
 ##################################"""
-# 传输数据任务数据量向大小
+# 传输数据任务数据量向大小, 单位Mb
 TASK_DATA_SIZE_MIN = 1
-TASK_DATA_SIZE_MAX = 10
+TASK_DATA_SIZE_MAX = 2
 
 # 传输数据任务截止时间
 TASK_DEADLINE_MIN = 1
-TASK_DEADLINE_MAX = 5
+TASK_DEADLINE_MAX = 2
 
 """##################################
 #  wireless communication parameters value settings

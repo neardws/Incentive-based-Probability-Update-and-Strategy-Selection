@@ -88,21 +88,49 @@ def get_task_id_under_edge_node(node_type, node_id, distance_matrix):
         task_id             任务id, List
     """
     task_id = []
-    communication_radius = 0
     if node_type == "BaseStation":
         communication_radius = settings.base_station_communication_radius
+        for j in range(distance_matrix.shape[1]):
+            distance = distance_matrix[node_id][j]
+            if distance < communication_radius:
+                task_id.append(j)
+        return task_id
     elif node_type == "RSU":
         communication_radius = settings.rsu_communication_radius
+        for j in range(distance_matrix.shape[1]):
+            distance = distance_matrix[node_id + settings.base_station_num][j]
+            if distance < communication_radius:
+                task_id.append(j)
+        return task_id
     elif node_type == "Vehicle":
         communication_radius = settings.edge_vehicle_communication_radius
+        for j in range(distance_matrix.shape[1]):
+            distance = distance_matrix[node_id][j]
+            if distance < communication_radius:
+                task_id.append(j)
+        return task_id
     else:
         raise ValueError("from init_distance.get_task_list_under_edge_node 节点类型出错， 不是指定的类型")
-    task_length = len(task_list)
-    for j in range(task_length):
-        distance = distance_matrix[node_id - 1][j]
-        if distance < communication_radius:
-            task_id.append(j)
-    return task_id
+
+
+def get_task_time_limitation_under_edge_node(node_type, node_id, distance_matrix_list, task_list):
+    task_id_list = []
+    for distance_matrix in distance_matrix_list:
+        task_id = get_task_id_under_edge_node(node_type, node_id, distance_matrix)
+        task_id_list.append(task_id)
+    init_task_id = task_id_list[0]
+    task_time_limitation = np.zeros(len(init_task_id))
+    for task_id in task_id_list:
+        for i in range(len(task_id)):
+            for j in range(len(init_task_id)):
+                if task_id[i] == init_task_id[j]:
+                    task_time_limitation[j] += 1
+    for i in range(len(task_time_limitation)):
+        task_id = init_task_id[i]
+        task = task_list[task_id]
+        task_deadline = task["deadline"]
+        task_time_limitation[i] = min(task_time_limitation[i], task_deadline)
+    return task_time_limitation
 
 
 if __name__ == '__main__':
