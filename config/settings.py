@@ -32,7 +32,6 @@ BASE_LONGITUDE = 104.045824
 CHANNEL_RESOURCE = 100
 TRANSMISSION_POWER = 40
 
-
 """##################################
 #  experiment  settings
 ##################################"""
@@ -115,3 +114,12 @@ EXPERIMENT_START_TIME = 1
 EXPERIMENT_LAST_TIME = 10
 
 EXPERIMENT_FILE_NAME = "../experiment_data/experiment_file_name.txt"
+
+# 边缘节点的类型
+NODE_TYPE_BASE_STATION = "BaseStation"
+NODE_TYPE_RSU = "RSU"
+NODE_TYPE_VEHICLE = "Vehicle"
+
+NODE_TYPE_FIXED = "Fixed_Edge_Node"
+NODE_TYPE_MOBILE = "Mobile_Edge_Node"
+

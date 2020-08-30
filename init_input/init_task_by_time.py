@@ -35,8 +35,21 @@ def get_random_task_deadline():
     :return
         random_task_deadline    截止时间，int
     """
-    random_task_deadline = random.randint(settings.task_deadline_min, settings.task_deadline_max)
-    return random_task_deadline
+    deadline_range = range(settings.task_deadline_min, settings.task_deadline_max + 1)
+    start_wight = len(deadline_range) * 10
+    end_wight = 0
+    deadline_wights = range(start_wight, end_wight, -10)
+
+    total = 0
+    totals_wights = []
+    for wights in deadline_wights:
+        total += wights
+        totals_wights.append(total)
+
+    random_num = random.random() * total
+    for i, total in enumerate(totals_wights):
+        if random_num < total:
+            return deadline_range[i]
 
 
 def init_task_by_time(customer_vehicle_id, time):
@@ -57,7 +70,7 @@ def init_task_by_time(customer_vehicle_id, time):
             vehicle_x = vehicle_location[0]
             vehicle_y = vehicle_location[1]
             random_num = random.random()
-            if random_num > 0.7:
+            if random_num > 0.8:
                 task = {"task_id": id,
                         "x": vehicle_x,
                         "y": vehicle_y,
@@ -68,14 +81,15 @@ def init_task_by_time(customer_vehicle_id, time):
 
 
 if __name__ == '__main__':
-    edge_vehicle_id = get_edge_vehicle_id()
-    id = get_vehicle_id()
-    customer_vehicle_id = get_customer_vehicle_id(edge_vehicle_id=edge_vehicle_id,
-                                                  id=id)
-    task_list = init_task_by_time(customer_vehicle_id=customer_vehicle_id, time=2)
-    print("*" * 32)
-    print("Task List")
-    print(task_list)
-    print("*" * 32)
-    print("Task List Example")
-    print(task_list[0])
+    # edge_vehicle_id = get_edge_vehicle_id()
+    # id = get_vehicle_id()
+    # customer_vehicle_id = get_customer_vehicle_id(edge_vehicle_id=edge_vehicle_id,
+    #                                               id=id)
+    # task_list = init_task_by_time(customer_vehicle_id=customer_vehicle_id, time=2)
+    # print("*" * 32)
+    # print("Task List")
+    # print(task_list)
+    # print("*" * 32)
+    # print("Task List Example")
+    # print(task_list[0])
+    print(get_random_task_deadline())
