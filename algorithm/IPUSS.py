@@ -245,14 +245,40 @@ def compute_SINR(node_type,
     return SINR
 
 
-def compute_task_transmission_data(task_id_list, strategy):
-    for task_id in task_id_list:
-        [x, y] = strategy.shape
-        for i in range(x):
-            if task_id == strategy[i][0]:
-                task_time = strategy[i][1]
+def compute_task_transmission_data(task_id_list,
+                                   strategy,
+                                   node_type,
+                                   node_no,
+                                   fixed_node,
+                                   mobile_node,
+                                   usable_channel_list_under_fixed_node,
+                                   usable_channel_list_under_mobile_node,
+                                   fixed_distance_matrix,
+                                   mobile_distance_matrix):
+    sub_channel_bandwidth = settings.SUB_CHANNEL_BANDWIDTH
 
-    pass
+    task_transmission_data = []
+    for task_id in task_id_list:
+        task_data_size = 0
+        [x, y] = strategy.shape
+        for channel_no in range(x):
+            if task_id == strategy[channel_no][0]:
+                task_time = strategy[channel_no][1]
+                SINR = compute_SINR(node_type=node_type,
+                                    node_no=node_no,
+                                    channel=channel_no,
+                                    task_id=task_id,
+                                    fixed_node=fixed_node,
+                                    mobile_node=mobile_node,
+                                    usable_channel_list_under_fixed_node=usable_channel_list_under_fixed_node,
+                                    usable_channel_list_under_mobile_node=usable_channel_list_under_mobile_node,
+                                    fixed_distance_matrix=fixed_distance_matrix,
+                                    mobile_distance_matrix=mobile_distance_matrix)
+                channel_data_size = task_time * sub_channel_bandwidth * np.log2(1 + SINR)
+                task_data_size += channel_data_size
+        task_transmission_data.append(task_data_size)
+
+    return task_transmission_data
 
 
 # def get_strategy(x_length, y_length, task_time_limitation_under_edge_node):
