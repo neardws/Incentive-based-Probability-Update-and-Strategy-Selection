@@ -30,8 +30,7 @@ def save_pickle(fixed_edge_node,
                 edge_vehicle_node,
                 task_by_time_list,
                 fixed_distance_matrix_list,
-                mobile_distance_matrix_list,
-                ):
+                mobile_distance_matrix_list):
     file_name = get_unique_file_name()
     txt_file = Path(settings.experiment_file_name)
     with txt_file.open('a+', encoding='utf-8') as fp:

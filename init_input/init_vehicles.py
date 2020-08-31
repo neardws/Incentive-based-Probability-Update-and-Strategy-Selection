@@ -61,6 +61,13 @@ def get_edge_vehicle_id():
     for id_set in time_id_set:
         intersection_id_set = intersection_id_set & id_set
     id = list(intersection_id_set)
+    for i in id:
+        vehicle_location = get_vehicle_location(i, settings.experiment_start_time)
+        if vehicle_location[0] < 500 or vehicle_location[0] > 2500:
+            id.remove(i)
+        else:
+            if vehicle_location[1] < 500 or vehicle_location[1] > 2500:
+                id.remove(i)
     # print("----------------------------------------------------------")
     # print(id)
     # print("----------------------------------------------------------")

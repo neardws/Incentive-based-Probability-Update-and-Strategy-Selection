@@ -70,7 +70,7 @@ def init_task_by_time(customer_vehicle_id, time):
             vehicle_x = vehicle_location[0]
             vehicle_y = vehicle_location[1]
             random_num = random.random()
-            if random_num > 0.8:
+            if random_num > 0.75:
                 task = {"task_id": id,
                         "x": vehicle_x,
                         "y": vehicle_y,

@@ -42,9 +42,9 @@ axes1.set_xlim(0, 3000)
 x = y = np.arange(0, 3000, 1)
 x, y = np.meshgrid(x, y)
 # 基站：2个
-basestation_x = [800, 2000]
-basestation_y = [800, 2000]
-radius_big = 800
+basestation_x = [700, 2000]
+basestation_y = [700, 2000]
+radius_big = 700
 # Rsu:9个
 rsu_x = [1000, 1500, 2500, 2500, 2500, 500, 1300, 500, 1700]
 rsu_y = [1500, 500, 500, 1300, 2500, 2000, 2500, 2500, 1000]
@@ -60,7 +60,7 @@ for x_cord, y_cord in zip(rsu_x, rsu_y):
     axes1.add_patch(plt.Circle((x_cord, y_cord), radius_small, color="blue", fill=False, linestyle="--"))
     axes1.scatter(x_cord, y_cord, marker="o", color="blue")
 
-df = pd.read_csv(settings.task_csv_name)
+df = pd.read_csv(settings.TASK_CSV_NAME)
 df = df[df["time"] == 1]
 task_x = df["x"].tolist()
 task_y = df["y"].tolist()

@@ -14,11 +14,11 @@
 USERNAME = "root"
 PORT = 3306
 DATABASE = "vehiclecd"
-CSV_NAME = "./data/data.csv"
-XY_CSV_NAME = "./data/xy_data.csv"
+CSV_NAME = "../data/data.csv"
+XY_CSV_NAME = "../data/xy_data.csv"
 FILL_XY_CSV_NAME = "../data/fill_xy.csv"
-INIT_CSV_NAME = "./data/init.csv"
-TASK_CSV_NAME = "./data/task.csv"
+INIT_CSV_NAME = "../data/init.csv"
+TASK_CSV_NAME = "../data/task.csv"
 
 # sql search condition
 START_TIME = "2014-08-20 09:00:00"
@@ -46,15 +46,15 @@ EDGE_VEHICLE_NUM = 7
 SUB_CHANNEL_NUM = 30
 
 # 基站位置
-BASE_STATION_X = [800, 2000]
-BASE_STATION_Y = [800, 2000]
+BASE_STATION_X = [700, 2000]
+BASE_STATION_Y = [700, 2000]
 
 # rsu位置
 RSU_X = [1000, 1500, 2500, 2500, 2500, 500, 1300, 500, 1700]
 RSU_Y = [1500, 500, 500, 1300, 2500, 2000, 2500, 2500, 1000]
 
 # 通讯半径
-BASE_STATION_COMMUNICATION_RADIUS = 800
+BASE_STATION_COMMUNICATION_RADIUS = 700
 RSU_COMMUNICATION_RADIUS = 500
 EDGE_VEHICLE_COMMUNICATION_RADIUS = 300
 
@@ -114,6 +114,7 @@ EXPERIMENT_START_TIME = 1
 EXPERIMENT_LAST_TIME = 10
 
 EXPERIMENT_FILE_NAME = "../experiment_data/experiment_file_name.txt"
+EXPERIMENT_MEDIAN_FILE_NAME = "../experiment_data/experiment_median_file_name.txt"
 
 # 边缘节点的类型
 NODE_TYPE_BASE_STATION = "BaseStation"
