@@ -83,27 +83,7 @@ def get_usable_channel_list(useful_channel):
     return usable_channel_list
 
 
-# def get_strategy(x_length, y_length, task_time_limitation_under_edge_node):
-#     strategy_list = []
-#
-#     j_strategy_list = [np.zeros(2)]
-#
-#     for j in tqdm(range(y_length)):
-#         for k in range(task_time_limitation_under_edge_node[j]):
-#             j_strategy = np.zeros(2)
-#             j_strategy[0] = j + 1
-#             j_strategy[1] = k + 1
-#             j_strategy_list.append(j_strategy)
-#     print(j_strategy_list)
-#     print(len(j_strategy_list))
-#
-#     for strategy in tqdm(itertools.permutations(j_strategy_list, x_length)):
-#         strategy_list.append(strategy)
-#
-#     return strategy_list
-
-
-def get_combination_of_task_and_time(usable_channel_list_len, task_id_under_edge_node, time_limitation_under_edge_node):
+def get_combination_and_strategy_length(usable_channel_list_len, task_id_under_edge_node, time_limitation_under_edge_node):
     if len(task_id_under_edge_node) != 0:
         combination_of_task_and_time = [[-1, -1]]
         for i, task_id in enumerate(task_id_under_edge_node):
@@ -125,35 +105,15 @@ def decimal2xBase(decimal_num, x_base):
             break
         decimal_num = quotient
     x_base_num.reverse()
+    return x_base_num
+
+
+def constructor_of_strategy(x_base_num, combination_and_strategy_length):
+    strategy = []
+    combination = combination_and_strategy_length["combination_of_task_and_time"]
     for i in x_base_num:
-        print(str(i), end=" ")
-
-
-# def generato_of_strategy_list(usable_channel_list_len, task_id_under_edge_node_len, time_limitation_under_edge_node):
-#     strategy_list = []
-# 
-#     # x 轴，节点当前可用的信道
-#     x_length = usable_channel_list_len
-# 
-#     # y 轴, 节点的所有任务数
-#     y_length = task_id_under_edge_node_len
-# 
-#     if y_length != 0:
-# 
-#         j_strategy_list = [[0, 0]]
-# 
-#         for j in range(y_length):
-#             for k in range(int(time_limitation_under_edge_node[j])):
-#                 j_strategy_list.append([j + 1, k + 1])
-#         print(j_strategy_list)
-#         print(len(j_strategy_list))
-# 
-#         for strategy in itertools.product(j_strategy_list, repeat=x_length):
-#             strategy_list.append(strategy)
-# 
-#         return strategy_list
-#     else:
-#         return
+        strategy.append(combination[i])
+    return strategy
 
 
 def generator_of_strategy_selection_probability(strategy_list_length):
@@ -161,11 +121,26 @@ def generator_of_strategy_selection_probability(strategy_list_length):
     return strategy_selection_probability
 
 
+def binary_search(sorted_list, start, end, x):
+    if end >= start:
+        middle = int(start + (end - start) / 2)
+        if sorted_list[middle] < x:
+            if sorted_list[middle + 1] > x:
+                return middle + 1
+            else:
+                return binary_search(sorted_list, middle + 1, end, x)
+        elif sorted_list[middle] > x:
+            if sorted_list[middle - 1] < x:
+                return middle
+            else:
+                return binary_search(sorted_list, start, middle - 1, x)
+        else:
+            return middle
+
+
 def weighted_choice(strategy_selection_probability):
     random_num = random.random() * sum(strategy_selection_probability)
-    for i, weight_sum in enumerate(list(itertools.accumulate(strategy_selection_probability))):
-        if random_num < weight_sum:
-            return i
+    return binary_search(list(itertools.accumulate(strategy_selection_probability)), 0, len(strategy_selection_probability) - 1, random_num)
 
 
 def random_channel_fading_gain():
@@ -364,7 +339,10 @@ if __name__ == '__main__':
     # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     # exit()
     # # # print(len(strategy_list))
-    combination_of_task_and_time = get_combination_of_task_and_time(10, task_id_under_edge_node=[4, 8, 16, 19],
-                                                                    time_limitation_under_edge_node=[2, 2, 1, 2])
-    print(combination_of_task_and_time)
-    # print(np.power(10, 10))
+    # combination_of_task_and_time = get_combination_of_task_and_time(10, task_id_under_edge_node=[4, 8, 16, 19],
+    #                                                                 time_limitation_under_edge_node=[2, 2, 1, 2])
+    # print(combination_of_task_and_time)
+    # probability_list = generator_of_strategy_selection_probability(combination_of_task_and_time["length_of_strategy_list"])
+    # choose = weighted_choice(probability_list)
+    # decimal2xBase(choose, len(combination_of_task_and_time["combination_of_task_and_time"]))
+    print(np.power(10, 10))
