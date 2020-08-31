@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # fixed_distance_matrix_list = None
     # mobile_distance_matrix_list = None
 
-    pickle_file = Path(load_pickle(15))
+    pickle_file = Path(load_pickle(7))
     # with pickle_file.open("rb") as fp:
 
     fp = pickle_file.open("rb")
@@ -183,7 +183,7 @@ if __name__ == '__main__':
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         strategy_list = generator_of_strategy_list(usable_channel_list_len=len(usable_channel_of_all_nodes[i]),
                                                    task_id_under_edge_node_len=len(task_id_under_each_node_list[i]),
-                                                   task_time_limitation_under_edge_node=
+                                                   time_limitation_under_edge_node=
                                                    task_time_limitation_of_all_nodes[i])
         strategy_space_of_all_nodes.append(strategy_list)
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -193,7 +193,7 @@ if __name__ == '__main__':
         strategy_list = generator_of_strategy_list(
             usable_channel_list_len=len(usable_channel_of_all_nodes[settings.BASE_STATION_NUM + i]),
             task_id_under_edge_node_len=len(task_id_under_each_node_list[settings.BASE_STATION_NUM + i]),
-            task_time_limitation_under_edge_node=task_time_limitation_of_all_nodes[settings.BASE_STATION_NUM + i])
+            time_limitation_under_edge_node=task_time_limitation_of_all_nodes[settings.BASE_STATION_NUM + i])
         strategy_space_of_all_nodes.append(strategy_list)
 
     for i in range(settings.EDGE_VEHICLE_NUM):
@@ -201,7 +201,7 @@ if __name__ == '__main__':
         strategy_list = generator_of_strategy_list(
             usable_channel_list_len=len(usable_channel_of_all_nodes[fixed_node_num + i]),
             task_id_under_edge_node_len=(task_id_under_each_node_list[fixed_node_num + i]),
-            task_time_limitation_under_edge_node=task_time_limitation_of_all_nodes[fixed_node_num + i])
+            time_limitation_under_edge_node=task_time_limitation_of_all_nodes[fixed_node_num + i])
         strategy_space_of_all_nodes.append(strategy_list)
 
     # 初始化选择概率
