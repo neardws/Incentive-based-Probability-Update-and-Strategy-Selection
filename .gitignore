@@ -2,3 +2,4 @@
 # Ignore dynaconf secret files
 .secrets.*
 /venv
+/experiment_data/*.hdf5

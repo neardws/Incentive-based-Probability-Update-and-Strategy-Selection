@@ -13,9 +13,9 @@ import pickle
 from datetime import datetime
 from pathlib import Path
 import numpy as np
-
-from algorithm.IPUSS import init_useful_channel, get_usable_channel_list, generator_of_strategy_list, \
-    generator_of_strategy_selection_probability
+import h5py
+from algorithm.IPUSS import init_useful_channel, get_usable_channel_list,  \
+    generator_of_strategy_selection_probability, get_combination_and_strategy_length
 from config.config import settings
 from experiment.experiment_save_and_reload import save_experiment_median_to_pickle
 from init_input.experiment_input_save_and_reload import load_pickle
@@ -176,40 +176,46 @@ if __name__ == '__main__':
             task_list=task_list)
         task_time_limitation_of_all_nodes.append(task_time_limitation_under_edge_node)
 
-    # 初始化策略空间
-    strategy_space_of_all_nodes = []
+    # 初始化所有节点的策略组合及策略列表长度
+    combination_and_strategy_length_of_all_nodes = []
     for i in range(settings.BASE_STATION_NUM):
-        print_to_console("初始化策略空间 BASE_STATION " + str(i))
+        print_to_console("初始化所有节点的策略组合及策略列表长度 BASE_STATION " + str(i))
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        strategy_list = generator_of_strategy_list(usable_channel_list_len=len(usable_channel_of_all_nodes[i]),
-                                                   task_id_under_edge_node_len=len(task_id_under_each_node_list[i]),
-                                                   time_limitation_under_edge_node=
-                                                   task_time_limitation_of_all_nodes[i])
-        strategy_space_of_all_nodes.append(strategy_list)
+        combination_and_strategy_length = get_combination_and_strategy_length(
+            usable_channel_list_len=len(usable_channel_of_all_nodes[i]),
+            task_id_under_edge_node=task_id_under_each_node_list[i],
+            time_limitation_under_edge_node=task_time_limitation_of_all_nodes[i])
+        combination_and_strategy_length_of_all_nodes.append(combination_and_strategy_length)
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     for i in range(settings.RSU_NUM):
-        print_to_console("初始化策略空间 RSU " + str(i))
-        strategy_list = generator_of_strategy_list(
+        print_to_console("初始化所有节点的策略组合及策略列表长度 RSU " + str(i))
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        combination_and_strategy_length = get_combination_and_strategy_length(
             usable_channel_list_len=len(usable_channel_of_all_nodes[settings.BASE_STATION_NUM + i]),
-            task_id_under_edge_node_len=len(task_id_under_each_node_list[settings.BASE_STATION_NUM + i]),
+            task_id_under_edge_node=task_id_under_each_node_list[settings.BASE_STATION_NUM + i],
             time_limitation_under_edge_node=task_time_limitation_of_all_nodes[settings.BASE_STATION_NUM + i])
-        strategy_space_of_all_nodes.append(strategy_list)
+        combination_and_strategy_length_of_all_nodes.append(combination_and_strategy_length)
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     for i in range(settings.EDGE_VEHICLE_NUM):
-        print_to_console("初始化策略空间 EDGE_VEHICLE " + str(i))
-        strategy_list = generator_of_strategy_list(
+        print_to_console("初始化所有节点的策略组合及策略列表长度 EDGE_VEHICLE " + str(i))
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        combination_and_strategy_length = get_combination_and_strategy_length(
             usable_channel_list_len=len(usable_channel_of_all_nodes[fixed_node_num + i]),
-            task_id_under_edge_node_len=(task_id_under_each_node_list[fixed_node_num + i]),
+            task_id_under_edge_node=task_id_under_each_node_list[fixed_node_num + i],
             time_limitation_under_edge_node=task_time_limitation_of_all_nodes[fixed_node_num + i])
-        strategy_space_of_all_nodes.append(strategy_list)
+        combination_and_strategy_length_of_all_nodes.append(combination_and_strategy_length)
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # 初始化选择概率
-    strategy_selection_probability_of_all_node = []
-    for strategy_space in strategy_space_of_all_nodes:
-        strategy_list_length = len(strategy_space)
-        strategy_selection_probability = generator_of_strategy_selection_probability(strategy_list_length)
-        strategy_selection_probability_of_all_node.append(strategy_selection_probability)
+    h5py_file = h5py.File(settings.H5PY_FILE, "w")
+
+    for num, combination_and_strategy_length in enumerate(combination_and_strategy_length_of_all_nodes):
+        print_to_console("初始化选择概率 " + str(num))
+        if combination_and_strategy_length is not None:
+            strategy_list_length = int(combination_and_strategy_length["length_of_strategy_list"])
+            h5py_file.create_dataset(str(num), data=generator_of_strategy_selection_probability(strategy_list_length))
 
     save_success = save_experiment_median_to_pickle(iteration,
                                                     fixed_distance_matrix,
@@ -223,7 +229,7 @@ if __name__ == '__main__':
                                                     task_id_under_each_node_list,
                                                     usable_channel_of_all_nodes,
                                                     task_time_limitation_of_all_nodes,
-                                                    strategy_space_of_all_nodes,
-                                                    strategy_selection_probability_of_all_node)
+                                                    combination_and_strategy_length_of_all_nodes,
+                                                    )
     if save_success:
         print("保存实验中间值成功")

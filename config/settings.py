@@ -115,6 +115,8 @@ EXPERIMENT_LAST_TIME = 10
 
 EXPERIMENT_FILE_NAME = "../experiment_data/experiment_file_name.txt"
 EXPERIMENT_MEDIAN_FILE_NAME = "../experiment_data/experiment_median_file_name.txt"
+ITERATION_MEDIAN_FILE_NAME = "../experiment_data/iteration_median_file_name.txt"
+H5PY_FILE = "../experiment_data/strategy_selection_probability_of_all_node.hdf5"
 
 # 边缘节点的类型
 NODE_TYPE_BASE_STATION = "BaseStation"
