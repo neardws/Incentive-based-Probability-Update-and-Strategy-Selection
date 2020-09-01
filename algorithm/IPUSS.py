@@ -92,7 +92,7 @@ def get_combination_and_strategy_length(usable_channel_list_len, task_id_under_e
         length_of_combination = int(len(combination_of_task_and_time)),
         return {"combination_of_task_and_time": combination_of_task_and_time,
                 "length_of_combination": length_of_combination,
-                "length_of_strategy_list": np.power(usable_channel_list_len, length_of_combination)}
+                "length_of_strategy_list": np.power(length_of_combination, usable_channel_list_len)}
     else:
         return
 
