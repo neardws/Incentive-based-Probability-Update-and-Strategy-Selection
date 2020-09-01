@@ -116,14 +116,15 @@ def constructor_of_strategy(x_base_num, combination_and_strategy_length):
     return strategy
 
 
-def generator_of_strategy_selection_probability1(strategy_list_length):
-    strategy_selection_probability = np.ones(strategy_list_length, dtype=np.float16) * 0.5
+def generator_of_strategy_selection_probability(strategy_list_length):
+    strategy_selection_probability = np.ones(strategy_list_length, dtype=np.float16)
+    strategy_selection_probability *= 0.5
     return strategy_selection_probability
 
 
-def generator_of_strategy_selection_probability2(strategy_list_length):
-    strategy_selection_probability = list(itertools.repeat(0.5, strategy_list_length))
-    return strategy_selection_probability
+# def generator_of_strategy_selection_probability2(strategy_list_length):
+#     strategy_selection_probability = list(itertools.repeat(0.5, strategy_list_length))
+#     return strategy_selection_probability
 
 
 def binary_search(sorted_list, start, end, x):
@@ -144,7 +145,9 @@ def binary_search(sorted_list, start, end, x):
 
 
 def weighted_choice(strategy_selection_probability):
-    random_num = random.random() * np.sum(strategy_selection_probability)
+    weighted_sum = np.sum(strategy_selection_probability.astype(np.float64))
+    print(weighted_sum)
+    random_num = random.random() * weighted_sum
     return binary_search(list(itertools.accumulate(strategy_selection_probability)), 0, len(strategy_selection_probability) - 1, random_num)
 
 
@@ -350,12 +353,13 @@ if __name__ == '__main__':
     # probability_list = generator_of_strategy_selection_probability(combination_of_task_and_time["length_of_strategy_list"])
     # choose = weighted_choice(probability_list)
     # decimal2xBase(choose, len(combination_of_task_and_time["combination_of_task_and_time"]))
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    np_array2 = generator_of_strategy_selection_probability2(np.power(10, 10))
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    # np_array2 = generator_of_strategy_selection_probability2(np.power(10, 10))
+    # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    np_array1 = generator_of_strategy_selection_probability1(np.power(10, 10))
+    np_array1 = generator_of_strategy_selection_probability(np.power(6, 10))
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
+    i = weighted_choice(np_array1)
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print("")

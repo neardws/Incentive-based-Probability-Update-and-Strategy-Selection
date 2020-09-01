@@ -45,8 +45,7 @@ if __name__ == '__main__':
     task_id_under_each_node_list = pickle.load(fp)
     usable_channel_of_all_nodes = pickle.load(fp)
     task_time_limitation_of_all_nodes = pickle.load(fp)
-    strategy_space_of_all_nodes = pickle.load(fp)
-    strategy_selection_probability_of_all_node = pickle.load(fp)
+    combination_and_strategy_length_of_all_nodes = pickle.load(fp)
     """
       ————————————————————————————————————————————————————————————————————————————————————
           单时间片实验开始
