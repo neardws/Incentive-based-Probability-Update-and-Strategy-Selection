@@ -28,6 +28,8 @@ def get_median_unique_file_name():
 
 
 def save_experiment_median_to_pickle(iteration,
+                                     fixed_edge_node,
+                                     edge_vehicle_node,
                                      fixed_distance_matrix,
                                      mobile_distance_matrix,
                                      task_list,
@@ -48,6 +50,8 @@ def save_experiment_median_to_pickle(iteration,
     pickle_file = Path(file_name)
     with pickle_file.open("wb") as fp:
         pickle.dump(iteration, fp)
+        pickle.dump(fixed_edge_node, fp)
+        pickle.dump(edge_vehicle_node, fp)
         pickle.dump(fixed_distance_matrix, fp)
         pickle.dump(mobile_distance_matrix, fp)
         pickle.dump(task_list, fp)
@@ -82,7 +86,6 @@ def load_experiment_median_from_pickle(input_number):
 """
 保存迭代中间值
 """
-
 
 # def get_iteration_unique_file_name():
 #     now_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -124,7 +127,6 @@ def load_experiment_median_from_pickle(input_number):
 #         return file_name
 #     else:
 #         raise FileNotFoundError("from init_input.experiment_input_save_and_reload Pickle File not found")
-
 
 
 #

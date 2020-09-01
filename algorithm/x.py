@@ -44,10 +44,10 @@ def generator_of_strategy_list(usable_channel_list_len, task_id_under_edge_node_
 
 
 if __name__ == '__main__':
-    task_time_limitation_under_edge_node = [1, 2, 1, 1]
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    strategy_list = generator_of_strategy_list(5, 4, task_time_limitation_under_edge_node)
-    print(strategy_list[1])
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    # exit()
-    # # print(len(strategy_list))
+    selected_strategy = {'0': 1, '1': 2}
+    print(selected_strategy.keys())
+    for i in range(5):
+        if str(i) not in selected_strategy.keys():
+            continue
+
+        print(str(i) + "in")

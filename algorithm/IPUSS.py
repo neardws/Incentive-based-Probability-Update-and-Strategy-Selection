@@ -89,8 +89,10 @@ def get_combination_and_strategy_length(usable_channel_list_len, task_id_under_e
         for i, task_id in enumerate(task_id_under_edge_node):
             for j in range(int(time_limitation_under_edge_node[i])):
                 combination_of_task_and_time.append([task_id, j + 1])
+        length_of_combination = int(len(combination_of_task_and_time)),
         return {"combination_of_task_and_time": combination_of_task_and_time,
-                "length_of_strategy_list": np.power(usable_channel_list_len, len(combination_of_task_and_time))}
+                "length_of_combination": length_of_combination,
+                "length_of_strategy_list": np.power(usable_channel_list_len, length_of_combination)}
     else:
         return
 
@@ -130,13 +132,16 @@ def generator_of_strategy_selection_probability(strategy_list_length):
 def binary_search(sorted_list, start, end, x):
     if end >= start:
         middle = int(start + (end - start) / 2)
-        if sorted_list[middle] < x:
-            if sorted_list[middle + 1] > x:
+        comparative_num1 = sorted_list[middle]
+        comparative_num2 = sorted_list[middle + 1]
+        comparative_num3 = sorted_list[middle - 1]
+        if comparative_num1 < x:
+            if comparative_num2 > x:
                 return middle + 1
             else:
                 return binary_search(sorted_list, middle + 1, end, x)
-        elif sorted_list[middle] > x:
-            if sorted_list[middle - 1] < x:
+        elif comparative_num1 > x:
+            if comparative_num3 < x:
                 return middle
             else:
                 return binary_search(sorted_list, start, middle - 1, x)
@@ -145,10 +150,8 @@ def binary_search(sorted_list, start, end, x):
 
 
 def weighted_choice(strategy_selection_probability):
-    weighted_sum = np.sum(strategy_selection_probability.astype(np.float64))
-    print(weighted_sum)
-    random_num = random.random() * weighted_sum
-    return binary_search(list(itertools.accumulate(strategy_selection_probability)), 0, len(strategy_selection_probability) - 1, random_num)
+    random_num = random.random() * np.sum(strategy_selection_probability.astype(np.float64))
+    return binary_search(list(itertools.accumulate(strategy_selection_probability.astype(np.float64))), 0, strategy_selection_probability.size - 1, random_num)
 
 
 def random_channel_fading_gain():
@@ -283,12 +286,14 @@ def compute_task_transmission_data(task_id_list,
     return task_transmission_data_list
 
 
-def compute_task_is_finished(task_list, task_transmission_data_list_of_all_nodes):
+def compute_task_is_finished(task_list, task_transmission_data_dict_of_all_nodes):
     finished = np.zeros(len(task_list))
 
     task_size = np.zeros(len(task_list))
 
-    for task_transmission_data_list in task_transmission_data_list_of_all_nodes:
+    for key in task_transmission_data_dict_of_all_nodes.keys():
+        task_transmission_data_list = task_transmission_data_dict_of_all_nodes[key]
+
         for task_transmission_data in task_transmission_data_list:
             task_id = task_transmission_data["task_id"]
             task_data_size = task_transmission_data["task_data_size"]

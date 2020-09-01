@@ -12,6 +12,7 @@
 import pickle
 from datetime import datetime
 from pathlib import Path
+from tqdm import tqdm
 import numpy as np
 import h5py
 from algorithm.IPUSS import init_useful_channel, get_usable_channel_list,  \
@@ -211,13 +212,15 @@ if __name__ == '__main__':
     # 初始化选择概率
     h5py_file = h5py.File(settings.H5PY_FILE, "w")
 
-    for num, combination_and_strategy_length in enumerate(combination_and_strategy_length_of_all_nodes):
+    for num, combination_and_strategy_length in tqdm(enumerate(combination_and_strategy_length_of_all_nodes)):
         print_to_console("初始化选择概率 " + str(num))
         if combination_and_strategy_length is not None:
             strategy_list_length = int(combination_and_strategy_length["length_of_strategy_list"])
             h5py_file.create_dataset(str(num), data=generator_of_strategy_selection_probability(strategy_list_length))
 
     save_success = save_experiment_median_to_pickle(iteration,
+                                                    fixed_edge_node,
+                                                    edge_vehicle_node,
                                                     fixed_distance_matrix,
                                                     mobile_distance_matrix,
                                                     task_list,
