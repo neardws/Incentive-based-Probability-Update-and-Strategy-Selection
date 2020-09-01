@@ -202,7 +202,7 @@ def compute_signal_list(channel,
                     signal_value = np.square(channel_fading_gain) * antenna_constant * np.power(distance,
                                                                                                 0 - path_loss_exponent) * transmission_power
                     signal = {"node_type": settings.NODE_TYPE_MOBILE,
-                              "node_id": node_no,
+                              "node_id": node_no + int(len(fixed_node)),
                               "signal": signal_value}
                     signal_list.append(signal)
 
@@ -263,7 +263,7 @@ def compute_task_transmission_data(task_id_list,
     task_transmission_data_list = []
     for task_id in task_id_list:
         task_data_size = 0
-        [x, y] = strategy.shape
+        x = len(strategy)
         for channel_no in range(x):
             if task_id == strategy[channel_no][0]:
                 task_time = strategy[channel_no][1]
