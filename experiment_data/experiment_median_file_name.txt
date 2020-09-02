@@ -1,3 +1,4 @@
 ../experiment_data/experiment_median/Experiment_83_2020-09-01 02:55:24.pkl
 ../experiment_data/experiment_median/Experiment_70_2020-09-01 11:17:15.pkl
 ../experiment_data/experiment_median/Experiment_72_2020-09-01 14:42:59.pkl
+../experiment_data/experiment_median/Experiment_06_2020-09-02 17:08:30.pkl

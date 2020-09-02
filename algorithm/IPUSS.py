@@ -9,23 +9,12 @@
 ------------      -------    --------    -----------
 2020/8/29 下午5:11   neardws      1.0         None
 """
+import math
 from datetime import *
-from init_input.experiment_input_save_and_reload import load_pickle
-from pathlib import Path
-import pickle
 import numpy as np
-from init_input.init_distance import get_task_time_limitation_under_edge_node, get_task_id_under_edge_node
 from config.config import settings
 import itertools
-from tqdm import tqdm
 import random
-
-
-def print_to_console(msg, object):
-    print("*" * 32)
-    print(msg)
-    print(object)
-    print(type(object))
 
 
 def init_useful_channel(node_type, node_id, fixed_edge_node, edge_vehicle_node):
@@ -53,7 +42,7 @@ def init_useful_channel(node_type, node_id, fixed_edge_node, edge_vehicle_node):
 
 def update_useful_channel(strategy, useful_channel):
     for i in range(len(useful_channel)):
-        if strategy[i][0] != 0:
+        if strategy[i][0] != 0 and strategy[i][0] != -1:
             channel_time = strategy[i][1]
             useful_channel["channel_status"][i] = channel_time
 
@@ -110,48 +99,70 @@ def decimal2xBase(decimal_num, x_base):
     return x_base_num
 
 
-def constructor_of_strategy(x_base_num, combination_and_strategy_length):
+def constructor_of_strategy(x_base_num, combination):
     strategy = []
-    combination = combination_and_strategy_length["combination_of_task_and_time"]
     for i in x_base_num:
         strategy.append(combination[i])
     return strategy
 
 
-def generator_of_strategy_selection_probability(strategy_list_length):
-    strategy_selection_probability = np.ones(strategy_list_length, dtype=np.float16)
-    strategy_selection_probability *= 0.5
-    return strategy_selection_probability
+def weighted_choice(strategy_list_length, probabilities_wight_dict):
+    # 得到随机数
+    weight_sum = strategy_list_length
+    for probabilities_wight in probabilities_wight_dict:
+        weight_sum = weight_sum - 1 + probabilities_wight["weight"]
+    random_num = random.random() * weight_sum
 
+    if len(probabilities_wight_dict) == 0:
+        return math.floor(random_num)
+    else:
+        # 根据 probabilities_wight_dict 中的值进行查询
+        # probabilities_wight_dict 是已根据序号 i 排好序的
+        added_sum = 0
+        now_no = 0
+        keys = probabilities_wight_dict.keys()
+        for key in keys:
+            strategy_no = int(key)
+            strategy_weight = probabilities_wight_dict[key]
+            compare_number = random_num - added_sum
+            if strategy_weight >= 1:
+                compare_number -= (strategy_weight - 1)
+            if compare_number <= strategy_no - now_no:
+                return math.floor(compare_number) + now_no
+            added_sum += strategy_no - 1 + strategy_weight
+            now_no = strategy_no
+    # else:
+    #     # 二分查找
+    #     return binary_search(probabilities_wight_dict, 0, strategy_list_length, random_num)
 
-# def generator_of_strategy_selection_probability2(strategy_list_length):
-#     strategy_selection_probability = list(itertools.repeat(0.5, strategy_list_length))
-#     return strategy_selection_probability
+#
+# def binary_search(probabilities_wight_dict, start, end, random_num):
+#     if end >= start:
+#         middle = int(start + (end - start) / 2)
+#         comparative_num1 = 0
+#         for probabilities_wight in probabilities_wight_dict:
+#             if probabilities_wight["i"] <= middle:
+#                 comparative_num1 += probabilities_wight
+#
+#         comparative_num2 = sorted_list[middle + 1]
+#         comparative_num3 = sorted_list[middle - 1]
+#         if comparative_num1 < x:
+#             if comparative_num2 > x:
+#                 return middle + 1
+#             else:
+#                 return binary_search(sorted_list, middle + 1, end, x)
+#         elif comparative_num1 > x:
+#             if comparative_num3 < x:
+#                 return middle
+#             else:
+#                 return binary_search(sorted_list, start, middle - 1, x)
+#         else:
+#             return middle
 
-
-def binary_search(sorted_list, start, end, x):
-    if end >= start:
-        middle = int(start + (end - start) / 2)
-        comparative_num1 = sorted_list[middle]
-        comparative_num2 = sorted_list[middle + 1]
-        comparative_num3 = sorted_list[middle - 1]
-        if comparative_num1 < x:
-            if comparative_num2 > x:
-                return middle + 1
-            else:
-                return binary_search(sorted_list, middle + 1, end, x)
-        elif comparative_num1 > x:
-            if comparative_num3 < x:
-                return middle
-            else:
-                return binary_search(sorted_list, start, middle - 1, x)
-        else:
-            return middle
-
-
-def weighted_choice(strategy_selection_probability):
-    random_num = random.random() * np.sum(strategy_selection_probability.astype(np.float64))
-    return binary_search(list(itertools.accumulate(strategy_selection_probability.astype(np.float64))), 0, strategy_selection_probability.size - 1, random_num)
+#
+# def weighted_choice(strategy_selection_probability):
+#     random_num = random.random() * np.sum(strategy_selection_probability.astype(np.float64))
+#     return binary_search(list(itertools.accumulate(strategy_selection_probability.astype(np.float64))), 0, strategy_selection_probability.size - 1, random_num)
 
 
 def random_channel_fading_gain():
@@ -236,7 +247,7 @@ def compute_SINR(node_type,
                                       mobile_distance_matrix=mobile_distance_matrix)
     for signal_dict in signal_list:
         if signal_dict["node_type"] == node_type:
-            if signal_dict["node_no"] == node_no:
+            if signal_dict["node_id"] == node_no:
                 signal = signal_dict["signal"]
             else:
                 interference += signal_dict["signal"]
@@ -264,6 +275,8 @@ def compute_task_transmission_data(task_id_list,
     for task_id in task_id_list:
         task_data_size = 0
         x = len(strategy)
+        print(strategy)
+        print(type(strategy))
         for channel_no in range(x):
             if task_id == strategy[channel_no][0]:
                 task_time = strategy[channel_no][1]
@@ -322,7 +335,7 @@ def compute_probability_update_value(potential_value, max_potential_value):
 
 def compute_updated_probability(origin_probability, learning_rate, probability_update_value):
     if probability_update_value >= 0:
-        new_probability = origin_probability + (1 - origin_probability) * learning_rate * probability_update_value
+        new_probability = origin_probability + (2 - origin_probability) * learning_rate * probability_update_value
         return new_probability
     else:
         new_probability = origin_probability - origin_probability * learning_rate * probability_update_value
