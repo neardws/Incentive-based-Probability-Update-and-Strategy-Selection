@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # fixed_distance_matrix_list = None
     # mobile_distance_matrix_list = None
 
-    pickle_file = Path(load_pickle(7))
+    pickle_file = Path(load_pickle(20))
     # with pickle_file.open("rb") as fp:
 
     fp = pickle_file.open("rb")

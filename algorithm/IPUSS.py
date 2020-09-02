@@ -41,10 +41,11 @@ def init_useful_channel(node_type, node_id, fixed_edge_node, edge_vehicle_node):
 
 
 def update_useful_channel(strategy, useful_channel):
-    for i in range(len(useful_channel)):
+    for i in range(len(strategy)):
         if strategy[i][0] != 0 and strategy[i][0] != -1:
             channel_time = strategy[i][1]
             useful_channel["channel_status"][i] = channel_time
+    return useful_channel
 
 
 def next_time_slot_useful_channel(useful_channel):
@@ -120,8 +121,7 @@ def weighted_choice(strategy_list_length, probabilities_wight_dict):
         # probabilities_wight_dict 是已根据序号 i 排好序的
         added_sum = 0
         now_no = 0
-        keys = probabilities_wight_dict.keys()
-        for key in keys:
+        for key in sorted(probabilities_wight_dict):
             strategy_no = int(key)
             strategy_weight = probabilities_wight_dict[key]
             compare_number = random_num - added_sum
@@ -313,8 +313,8 @@ def compute_task_is_finished(task_list, task_transmission_data_dict_of_all_nodes
             task_size[task_id] += task_data_size
 
     for i, size in enumerate(task_size):
-        task_need_size = task_list[i]["task_size"]
-        if size >= task_need_size * 8 * 1024 * 1024:
+        task_need_size = task_list[i]["data_size"]
+        if size >= task_need_size * 1024 * 1024:
             finished[i] = 1
 
     return finished

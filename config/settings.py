@@ -43,7 +43,7 @@ TRANSMISSION_POWER = 40
 BASE_STATION_NUM = 2
 RSU_NUM = 9
 EDGE_VEHICLE_NUM = 7
-SUB_CHANNEL_NUM = 30
+SUB_CHANNEL_NUM = 10
 
 # 基站位置
 BASE_STATION_X = [700, 2000]
@@ -76,11 +76,11 @@ SUB_CHANNEL_BANDWIDTH = 5e4
 ##################################"""
 # 传输数据任务数据量向大小, 单位Mb
 TASK_DATA_SIZE_MIN = 1
-TASK_DATA_SIZE_MAX = 2
+TASK_DATA_SIZE_MAX = 1
 
 # 传输数据任务截止时间
 TASK_DEADLINE_MIN = 1
-TASK_DEADLINE_MAX = 2
+TASK_DEADLINE_MAX = 1
 
 """##################################
 #  wireless communication parameters value settings
