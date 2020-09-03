@@ -8,9 +8,8 @@
             <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/experiment_data/backup.hdf5" />
-            <excludedPath local="true" path="$PROJECT_DIR$/experiment_data/strategy_selection_probability_of_all_node.hdf5" />
-            <excludedPath path="/experiment_data" />
+            <excludedPath local="true" path="$PROJECT_DIR$/experiment_data/experiment_output" />
+            <excludedPath local="true" path="$PROJECT_DIR$/venv" />
           </excludedPaths>
         </serverdata>
       </paths>

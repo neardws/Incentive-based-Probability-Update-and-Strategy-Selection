@@ -9,13 +9,15 @@
 ------------      -------    --------    -----------
 2020/8/30 下午7:23   neardws      1.0         None
 """
+import json
+import os
+
 import numpy as np
 from datetime import datetime
 from pathlib import Path
 import pickle
 from config.config import settings
-from algorithm.IPUSS import weighted_choice, compute_task_is_finished, \
-    compute_task_transmission_data, compute_potential_value, compute_probability_update_value, \
+from algorithm.IPUSS import weighted_choice, compute_potential_value, compute_probability_update_value, \
     compute_updated_probability, constructor_of_strategy, decimal2xBase, update_useful_channel, \
     random_channel_fading_gain
 from experiment.experiment_save_and_reload import load_experiment_median_from_pickle
@@ -27,32 +29,6 @@ def print_to_console(msg, objective=None):
     if objective is not None:
         print(objective)
         print(type(objective))
-
-
-def process_compute_task_transmission_data(i,
-                                           task_id_under_each_node,
-                                           selected_strategy,
-                                           node_type,
-                                           fixed_edge_node,
-                                           edge_vehicle_node,
-                                           useful_channel_under_node,
-                                           fixed_node_num,
-                                           fixed_distance_matrix,
-                                           mobile_distance_matrix):
-    task_transmission_data = compute_task_transmission_data(task_id_list=task_id_under_each_node,
-                                                            strategy=selected_strategy,
-                                                            node_type=node_type,
-                                                            node_no=i,
-                                                            fixed_node=fixed_edge_node,
-                                                            mobile_node=edge_vehicle_node,
-                                                            useful_channel_list_under_fixed_node=
-                                                            useful_channel_under_node[:fixed_node_num],
-                                                            useful_channel_list_under_mobile_node=
-                                                            useful_channel_under_node[fixed_node_num:],
-                                                            fixed_distance_matrix=fixed_distance_matrix,
-                                                            mobile_distance_matrix=mobile_distance_matrix)
-    return {"i": i,
-            "task_transmission_data": task_transmission_data}
 
 
 if __name__ == '__main__':
@@ -79,26 +55,47 @@ if __name__ == '__main__':
           单时间片实验开始
       ————————————————————————————————————————————————————————————————————————————————————
     """
-    # tr = tracker.SummaryTracker()
-    # tr.print_diff()
+    if not os.path.exists(settings.JSON_File):
+        # os.mkdir("../experiment_data/experiment_output/")
+        # os.mknod(settings.JSON_File)
+        json_file = open(settings.JSON_File, "a+")
+        iteration = 0
+        print_to_console(" 初始化最大策略值")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        for i in range(node_num):
+            max_potential_value[i] = 1
 
+        strategy_selection_probability_dict_list = list()
+        for i in range(node_num):
+            strategy_selection_probability_dict = dict()
+            strategy_selection_probability_dict_list.append(strategy_selection_probability_dict)
+    else:
+        json_file = open(settings.JSON_File, "r+")
+        lines = json_file.readlines()
+        last_line = lines[-1].rstrip("\n")
+        json_object = json.loads(str(last_line))
+        # print(json_object)
+        iteration = json_object["iteration"]
+        max_potential_value = np.array(json_object["max_potential_value"])
+        strategy_selection_probability_dict_list = json_object["strategy_selection_probability_dict_list"]
+        json_file.close()
+        json_file = open(settings.JSON_File, "a+")
     # 开始单次时间片实验
     node_num = node_num - 1
 
-    processes_number = 3
-    # experiment_iteration_max = 10e5
-    experiment_iteration_max = 100
+    experiment_iteration_max = 10e5
+    # experiment_iteration_max = 500
     learning_rate = settings.LEARNING_RATE
-
-    print_to_console(" 初始化最大策略值")
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    for i in range(node_num):
-        max_potential_value[i] = 1
 
     white_gaussian_noise = settings.WHITE_GAUSSIAN_NOISE
     antenna_constant = settings.ANTENNA_CONSTANT
     path_loss_exponent = settings.PATH_LOSS_EXPONENT
     sub_channel_bandwidth = settings.SUB_CHANNEL_BANDWIDTH
+
+
+
+    print_to_console("第" + str(iteration) + "迭代开始")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     while iteration < experiment_iteration_max:
         """
@@ -106,19 +103,14 @@ if __name__ == '__main__':
               单次迭代
           ————————————————————————————————————————————————————————————————————————————————————
         """
-        print_to_console("第" + str(iteration) + "迭代开始")
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        # print_to_console("第" + str(iteration) + "迭代开始")
+        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-        # 初始化策略列表与策略选择概率
-        print_to_console("迭代" + str(iteration) + " 初始化策略列表与策略选择概率")
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        # 初始化策略列表
+        # print_to_console("迭代" + str(iteration) + " 初始化策略列表")
+        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         selected_strategy = dict()
         selected_strategy_no = dict()
-
-        strategy_selection_probability_dict_list = list()
-        for i in range(node_num):
-            strategy_selection_probability_dict = dict()
-            strategy_selection_probability_dict_list.append(strategy_selection_probability_dict)
 
         """
         ————————————————————————————————————————————————————————————————————————————————————
@@ -127,11 +119,16 @@ if __name__ == '__main__':
         """
 
         for i in range(node_num):
-            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            print(str(i) + "选择策略开始")
+            # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            # print(str(i) + "选择策略开始")
             combination_and_strategy_length = combination_and_strategy_length_of_all_nodes[i]
+
+            strategy_selection_probability = strategy_selection_probability_dict_list[i]
             strategy_no = weighted_choice(combination_and_strategy_length["length_of_strategy_list"][0],
                                           strategy_selection_probability_dict_list[i])
+            # print_to_console(strategy_no)
+            # print_to_console(combination_and_strategy_length["length_of_strategy_list"][0])
+            # print_to_console(strategy_selection_probability_dict_list[i])
             x_base_num = decimal2xBase(decimal_num=strategy_no,
                                        x_base=combination_and_strategy_length[
                                            "length_of_combination"][0])
@@ -140,21 +137,21 @@ if __name__ == '__main__':
                                                    "combination_of_task_and_time"])
             selected_strategy[str(i)] = strategy
             selected_strategy_no[str(i)] = strategy_no
-
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        print("选择策略完成")
+        #
+        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        # print("选择策略完成")
 
         # 更新信道分配
         for i in range(len(selected_strategy)):
-            print_to_console("selected_strategy",selected_strategy)
-            print_to_console("len(selected_strategy)", len(selected_strategy))
-            print_to_console("selected_strategy[str(i)]", selected_strategy[str(i)])
+            # print_to_console("selected_strategy",selected_strategy)
+            # print_to_console("len(selected_strategy)", len(selected_strategy))
+            # print_to_console("selected_strategy[str(i)]", selected_strategy[str(i)])
             useful_channel_under_node[i] = update_useful_channel(selected_strategy[str(i)],
                                                                  useful_channel_under_node[i])
 
         # 计算激励值
-        print_to_console("迭代" + str(iteration) + " 计算激励值")
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        # print_to_console("迭代" + str(iteration) + " 计算激励值")
+        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         task_transmission_data_dict_of_all_nodes = dict()
 
         """
@@ -182,7 +179,7 @@ if __name__ == '__main__':
             """:cvar
             *****************************************************************************************************************************************
             """
-            print_to_console(task_id_under_each_node_list)
+            # print_to_console(task_id_under_each_node_list)
             task_id_list = task_id_under_each_node_list[fixed_node_id]
             node_strategy = selected_strategy[str(fixed_node_id)]
 
@@ -267,18 +264,6 @@ if __name__ == '__main__':
             """:cvar
             *****************************************************************************************************************************************
             """
-            # task_transmission_data = compute_task_transmission_data(task_id_list=task_id_under_each_node_list[i],
-            #                                                         strategy=selected_strategy[str(i)],
-            #                                                         node_type=node_type,
-            #                                                         node_no=i,
-            #                                                         fixed_node=fixed_edge_node,
-            #                                                         mobile_node=edge_vehicle_node,
-            #                                                         useful_channel_list_under_fixed_node=
-            #                                                         useful_channel_under_node[:fixed_node_num],
-            #                                                         useful_channel_list_under_mobile_node=
-            #                                                         useful_channel_under_node[fixed_node_num:],
-            #                                                         fixed_distance_matrix=fixed_distance_matrix,
-            #                                                         mobile_distance_matrix=mobile_distance_matrix)
 
             """:cvar
                         *****************************************************************************************************************************************
@@ -354,7 +339,7 @@ if __name__ == '__main__':
                                 interference += signal_dict["signal"]
 
                         SINR = inter_signal_value / (interference + white_gaussian_noise)
-                        print(SINR)
+                        # print(SINR)
                         channel_data_size = task_time * sub_channel_bandwidth * np.log2(1 + SINR)
                         task_data_size += channel_data_size
 
@@ -368,11 +353,6 @@ if __name__ == '__main__':
         *****************************************************************************************************************************************
         """
 
-        #
-        # finished = compute_task_is_finished(task_list=task_list,
-        #                                     task_transmission_data_dict_of_all_nodes=
-        #                                     task_transmission_data_dict_of_all_nodes)
-
         finished = np.zeros(len(task_list))
 
         task_size = np.zeros(len(task_list))
@@ -382,7 +362,7 @@ if __name__ == '__main__':
             task_transmission_data_list = task_transmission_data_dict_of_all_nodes[key]
 
             for task_transmission_data in task_transmission_data_list:
-                print_to_console("task_transmission_data", task_transmission_data)
+                # print_to_console("task_transmission_data", task_transmission_data)
                 task_id = task_transmission_data["task_id"]
                 task_data_size = task_transmission_data["task_data_size"]
                 task_size[task_id] += task_data_size
@@ -394,43 +374,73 @@ if __name__ == '__main__':
             if size >= task_need_size * 1024 * 1024 * 0.5:
                 finished[i] = 1
 
+        # finished_in_each_node = np.zeros(node_num)
+        # for node_no, task_id_under_each_node in enumerate(task_id_under_each_node_list):
+        #     for task_id in task_id_under_each_node:
+        #         if finished[task_id] == 1:
+        #             finished_in_each_node[node_no] += 1
         """:cvar
         *****************************************************************************************************************************************
         """
 
         # 计算激励值并更新策略选择概率
-        print_to_console("迭代" + str(iteration) + " 计算激励值并更新策略选择概率")
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        # print_to_console("迭代" + str(iteration) + " 计算激励值并更新策略选择概率")
+        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        potential_value_list = np.zeros(node_num)
         for i in range(node_num):
             if str(i) in selected_strategy_no.keys():
                 strategy_selection_probability = strategy_selection_probability_dict_list[i]
                 potential_value = compute_potential_value(task_id_under_each_node_list[i], finished)
+                potential_value_list[i] = potential_value
                 probability_update_value = compute_probability_update_value(potential_value=potential_value,
                                                                             max_potential_value=max_potential_value[
                                                                                 i])
                 strategy_no = selected_strategy_no[str(i)]
                 if strategy_no in strategy_selection_probability.keys():
-                    origin_probability = strategy_selection_probability[str(strategy_no)]["weight"]
+                    origin_probability = strategy_selection_probability[str(strategy_no)]
                 else:
                     origin_probability = 1
                 new_probability = compute_updated_probability(origin_probability, learning_rate,
                                                               probability_update_value)
-                strategy_selection_probability_dict_list[i][str(strategy_no)] = new_probability
-
-                # # 排序
-                # keys = strategy_selection_probability_dict_list[i].keys()
-                # keys.sort()
-                # strategy_selection_probability_dict_list[i] = map(strategy_selection_probability_dict_list[i].get(),
-                #                                                   keys)
+                if new_probability != 1.0:
+                    strategy_selection_probability_dict_list[i][str(strategy_no)] = new_probability
 
                 max_potential_value[i] = max(potential_value, max_potential_value[i])
 
-        print_to_console("迭代" + str(iteration) + " 结束")
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
         iteration += 1
 
-        if iteration % 100 == 0:
+        """
+                iteration
+                max_potential_value
+                strategy_selection_probability_dict_list
+                """
+
+        if iteration < 0:
+
             print("Iteration" + str(iteration))
-            for i in max_potential_value:
-                print(i)
+            json.dump({"iteration": iteration,
+                       "finished": sum(finished),
+                       "potential_value_list": list(potential_value_list),
+                       "sum_max_potential_value": sum(max_potential_value),
+                       "max_potential_value": list(max_potential_value),
+                       "strategy_selection_probability_dict_list": list(strategy_selection_probability_dict_list)}, json_file)
+            json_file.write("\n")
+            print_to_console("写入完成")
+
+        else:
+            if iteration % 100 == 0:
+                print_to_console("迭代" + str(iteration) + " 结束")
+                print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+            if iteration % 1000 == 0:
+                print_to_console("迭代" + str(iteration) + " 结束")
+                print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                json.dump({"iteration": iteration,
+                           "finished": sum(finished),
+                           "potential_value_list": list(potential_value_list),
+                           "sum_max_potential_value": sum(max_potential_value),
+                           "max_potential_value": list(max_potential_value),
+                           "strategy_selection_probability_dict_list": list(strategy_selection_probability_dict_list)},
+                          json_file)
+                json_file.write("\n")
+                print_to_console("写入完成")

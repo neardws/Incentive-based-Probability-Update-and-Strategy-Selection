@@ -102,7 +102,7 @@ WHITE_GAUSSIAN_NOISE = 10e-12
 #  algorithm parameters value settings
 ##################################"""
 # 学习率
-LEARNING_RATE = 0.01
+LEARNING_RATE = 10
 
 """##################################
 #  experiment parameters value settings
@@ -117,6 +117,8 @@ EXPERIMENT_FILE_NAME = "../experiment_data/experiment_file_name.txt"
 EXPERIMENT_MEDIAN_FILE_NAME = "../experiment_data/experiment_median_file_name.txt"
 ITERATION_MEDIAN_FILE_NAME = "../experiment_data/iteration_median_file_name.txt"
 H5PY_FILE = "../experiment_data/strategy_selection_probability_of_all_node.hdf5"
+JSON_FILE = "../experiment_data/experiment_output/iteration_results.json"
+
 
 # 边缘节点的类型
 NODE_TYPE_BASE_STATION = "BaseStation"

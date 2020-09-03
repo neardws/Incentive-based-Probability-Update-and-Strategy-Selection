@@ -109,14 +109,13 @@ def constructor_of_strategy(x_base_num, combination):
 
 def weighted_choice(strategy_list_length, probabilities_wight_dict):
     # 得到随机数
-    weight_sum = strategy_list_length
-    for probabilities_wight in probabilities_wight_dict:
-        weight_sum = weight_sum - 1 + probabilities_wight["weight"]
-    random_num = random.random() * weight_sum
+    if probabilities_wight_dict:
+        weight_sum = strategy_list_length
 
-    if len(probabilities_wight_dict) == 0:
-        return math.floor(random_num)
-    else:
+        for key in probabilities_wight_dict.keys():
+            weight_sum = weight_sum - 1 + probabilities_wight_dict[key]
+
+        random_num = random.random() * weight_sum
         # 根据 probabilities_wight_dict 中的值进行查询
         # probabilities_wight_dict 是已根据序号 i 排好序的
         added_sum = 0
@@ -129,40 +128,14 @@ def weighted_choice(strategy_list_length, probabilities_wight_dict):
                 compare_number -= (strategy_weight - 1)
             if compare_number <= strategy_no - now_no:
                 return math.floor(compare_number) + now_no
-            added_sum += strategy_no - 1 + strategy_weight
+            added_sum += strategy_no - 1 + strategy_weight - now_no
             now_no = strategy_no
-    # else:
-    #     # 二分查找
-    #     return binary_search(probabilities_wight_dict, 0, strategy_list_length, random_num)
-
-#
-# def binary_search(probabilities_wight_dict, start, end, random_num):
-#     if end >= start:
-#         middle = int(start + (end - start) / 2)
-#         comparative_num1 = 0
-#         for probabilities_wight in probabilities_wight_dict:
-#             if probabilities_wight["i"] <= middle:
-#                 comparative_num1 += probabilities_wight
-#
-#         comparative_num2 = sorted_list[middle + 1]
-#         comparative_num3 = sorted_list[middle - 1]
-#         if comparative_num1 < x:
-#             if comparative_num2 > x:
-#                 return middle + 1
-#             else:
-#                 return binary_search(sorted_list, middle + 1, end, x)
-#         elif comparative_num1 > x:
-#             if comparative_num3 < x:
-#                 return middle
-#             else:
-#                 return binary_search(sorted_list, start, middle - 1, x)
-#         else:
-#             return middle
-
-#
-# def weighted_choice(strategy_selection_probability):
-#     random_num = random.random() * np.sum(strategy_selection_probability.astype(np.float64))
-#     return binary_search(list(itertools.accumulate(strategy_selection_probability.astype(np.float64))), 0, strategy_selection_probability.size - 1, random_num)
+        compare_number = random_num - added_sum
+        return math.floor(compare_number) + now_no
+    else:
+        weight_sum = strategy_list_length
+        random_num = random.random() * weight_sum
+        return math.floor(random_num)
 
 
 def random_channel_fading_gain():
@@ -275,8 +248,8 @@ def compute_task_transmission_data(task_id_list,
     for task_id in task_id_list:
         task_data_size = 0
         x = len(strategy)
-        print(strategy)
-        print(type(strategy))
+        # print(strategy)
+        # print(type(strategy))
         for channel_no in range(x):
             if task_id == strategy[channel_no][0]:
                 task_time = strategy[channel_no][1]
@@ -334,11 +307,14 @@ def compute_probability_update_value(potential_value, max_potential_value):
 
 
 def compute_updated_probability(origin_probability, learning_rate, probability_update_value):
-    if probability_update_value >= 0:
-        new_probability = origin_probability + (2 - origin_probability) * learning_rate * probability_update_value
+    if probability_update_value > 0:
+        learning_rate = 1000
+        new_probability = origin_probability * learning_rate * probability_update_value
         return new_probability
+    elif probability_update_value == 0:
+        return origin_probability
     else:
-        new_probability = origin_probability - origin_probability * learning_rate * probability_update_value
+        new_probability = origin_probability / (learning_rate * (- probability_update_value))
         return new_probability
 
 
