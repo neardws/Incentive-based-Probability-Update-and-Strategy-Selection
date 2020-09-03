@@ -3,3 +3,9 @@
 .secrets.*
 /venv
 /experiment_data/*.hdf5
+/experiment_data/experiment_output
+
+
+
+
+
