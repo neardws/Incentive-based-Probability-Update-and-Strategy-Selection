@@ -502,7 +502,7 @@ if __name__ == '__main__':
                                  strategy_selection_probability_dict_list),
                              "strategy": selected_strategy_no,
                              "finished": list(finished),
-                             "potential_value_list": list(potential_value_list),
+                             "potential_value_list":list(potential_value_list),
                              "max_potential_value": list(max_potential_value),
                              "discard_set_list": new_discard_set_list}
                 # print_to_console(json_dict)

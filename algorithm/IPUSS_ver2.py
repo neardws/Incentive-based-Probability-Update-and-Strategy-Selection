@@ -89,13 +89,12 @@ def get_combination_and_strategy_length(usable_channel_list_len, task_id_under_e
 
 def decimal2xBase(decimal_num, x_base):
     x_base_num = []
-    while True:
-        quotient = decimal_num // x_base  # 商
+    quotient = decimal_num // x_base
+    while quotient != 0:
         remainder = decimal_num % x_base  # 余数
         x_base_num = x_base_num + [remainder]
-        if quotient == 0:
-            break
         decimal_num = quotient
+        quotient = decimal_num // x_base  # 商
     x_base_num.reverse()
     return x_base_num
 
@@ -109,6 +108,7 @@ def constructor_of_strategy(x_base_num, combination):
 
 def weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set):
     # 得到随机数
+    return_value = 0
     if probabilities_wight_dict:
         weight_sum = strategy_list_length
 
@@ -116,8 +116,6 @@ def weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
             weight_sum = weight_sum - 1 + probabilities_wight_dict[key]
 
         random_num = random.random() * weight_sum
-        if math.floor(random_num) in discard_set:
-            return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
         # 根据 probabilities_wight_dict 中的值进行查询
         # probabilities_wight_dict 是已根据序号 i 排好序的
         added_sum = 0
@@ -126,18 +124,38 @@ def weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
             strategy_no = int(key)
             strategy_weight = probabilities_wight_dict[key]
             compare_number = random_num - added_sum
-            if strategy_weight >= 1:
-                compare_number -= (strategy_weight - 1)
             if compare_number <= strategy_no - now_no:
-                return math.floor(compare_number) + now_no
+                return_value = math.floor(compare_number) + now_no
+                if return_value in discard_set:
+                    return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
+                else:
+                    return return_value
+            elif compare_number <= strategy_no - now_no + strategy_weight:
+                return_value = strategy_no
+                return return_value
             added_sum += strategy_no - 1 + strategy_weight - now_no
             now_no = strategy_no
+
         compare_number = random_num - added_sum
-        return math.floor(compare_number) + now_no
+        return_value = math.floor(compare_number) + now_no
+        if return_value in discard_set:
+            return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
+        else:
+            if return_value < 0:
+                print("end for loop")
+            return return_value
     else:
         weight_sum = strategy_list_length
         random_num = random.random() * weight_sum
-        return math.floor(random_num)
+        return_value = math.floor(random_num)
+        return return_value
+
+        # if return_value in discard_set:
+        #     return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
+        # else:
+        #     if return_value < 0:
+        #         print("else")
+        #     return return_value
 
 
 def random_channel_fading_gain():

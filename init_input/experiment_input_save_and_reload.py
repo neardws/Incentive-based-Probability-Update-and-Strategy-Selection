@@ -50,7 +50,7 @@ def load_pickle(input_number):
     file_name = ""
     with json_file.open('r', encoding="utf-8") as fp:
         file_lines = fp.readlines()
-        print(file_lines)
+        # print(file_lines)
         file_line = file_lines[input_number - 1]
         file_name = str(file_line).replace('\n', '')
     print(file_name)

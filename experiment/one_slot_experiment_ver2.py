@@ -10,17 +10,20 @@
 2020/8/30 下午7:23   neardws      1.0         None
 """
 import json
+import math
 import os
+import random
 
 import numpy as np
 from datetime import datetime
 from pathlib import Path
 import pickle
 from config.config import settings
-from algorithm.IPUSS_ver2 import weighted_choice, compute_potential_value, compute_probability_update_value, \
-    compute_updated_probability, constructor_of_strategy, decimal2xBase, update_useful_channel, \
+from algorithm.IPUSS_ver2 import compute_potential_value, compute_probability_update_value, \
+    compute_updated_probability, constructor_of_strategy, update_useful_channel, \
     random_channel_fading_gain
 from experiment.experiment_save_and_reload import load_experiment_median_from_pickle
+import multiprocessing
 
 
 def print_to_console(msg, objective=None):
@@ -29,6 +32,60 @@ def print_to_console(msg, objective=None):
     if objective is not None:
         print(objective)
         print(type(objective))
+
+
+def weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set):
+    # 得到随机数
+    return_value = 0
+    if probabilities_wight_dict:
+        weight_sum = strategy_list_length
+
+        for key in probabilities_wight_dict.keys():
+            weight_sum = weight_sum - 1 + probabilities_wight_dict[key]
+
+        random_num = random.random() * weight_sum
+        # 根据 probabilities_wight_dict 中的值进行查询
+        # probabilities_wight_dict 是已根据序号 i 排好序的
+        added_sum = 0
+        now_no = 0
+        for key in sorted(probabilities_wight_dict):
+            strategy_no = int(key)
+            strategy_weight = probabilities_wight_dict[key]
+            compare_number = random_num - added_sum
+            compare_number -= (strategy_weight - 1)
+            if compare_number <= strategy_no - now_no:
+                return_value = math.floor(compare_number) + now_no
+                if return_value in discard_set:
+                    return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
+                else:
+                    return return_value
+            added_sum += strategy_no - 1 + strategy_weight - now_no
+            now_no = strategy_no
+
+        compare_number = random_num - added_sum
+        return_value = math.floor(compare_number) + now_no
+        if return_value in discard_set:
+            return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
+        else:
+            return return_value
+    else:
+        weight_sum = strategy_list_length
+        random_num = random.random() * weight_sum
+        return_value = math.floor(random_num)
+        if return_value in discard_set:
+            return weighted_choice(strategy_list_length, probabilities_wight_dict, discard_set)
+        else:
+            return return_value
+
+
+def write_json(json_file_name, dict_data):
+    json_file = open(json_file_name, "a")
+    json.dump(dict_data, json_file)
+    json_file.write("\n")
+    # with open(json_file_name, "a") as json_file:
+    #     json.dump(dict_data, json_file)
+    #     json_file.write("\n")
+    #     # json_file.close()
 
 
 if __name__ == '__main__':
@@ -55,10 +112,14 @@ if __name__ == '__main__':
           单时间片实验开始
       ————————————————————————————————————————————————————————————————————————————————————
     """
-    if not os.path.exists(settings.JSON_File):
-        # os.mkdir("../experiment_data/experiment_output/")
-        # os.mknod(settings.JSON_File)
-        json_file = open(settings.JSON_File, "a+")
+    union_task_id_set = set()
+    for task_id_under_each_node in task_id_under_each_node_list:
+        task_id_set = set(task_id_under_each_node)
+        union_task_id_set = union_task_id_set | task_id_set
+
+    if not os.path.exists(settings.JSON_FILE_VER2):
+        json_file = open(settings.JSON_FILE_VER2, "a+")
+        json_file.close()
         iteration = 0
         print_to_console(" 初始化最大策略值")
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -69,30 +130,43 @@ if __name__ == '__main__':
         for i in range(node_num):
             strategy_selection_probability_dict = dict()
             strategy_selection_probability_dict_list.append(strategy_selection_probability_dict)
+
+        discard_set_list = list()
+        for i in range(node_num):
+            discard_set = set()
+            discard_set_list.append(discard_set)
+
     else:
-        json_file = open(settings.JSON_File, "r+")
+
+        json_file = open(settings.JSON_FILE_VER2, "r+")
         lines = json_file.readlines()
+        #json_file.writelines([item for item in lines[:-1]])
         last_line = lines[-1].rstrip("\n")
         json_object = json.loads(str(last_line))
-        # print(json_object)
         iteration = json_object["iteration"]
         max_potential_value = np.array(json_object["max_potential_value"])
         strategy_selection_probability_dict_list = json_object["strategy_selection_probability_dict_list"]
+        old_discard_set_list = json_object["discard_set_list"]
+
         json_file.close()
-        json_file = open(settings.JSON_File, "a+")
+
+        discard_set_list = []
+        for discard_set in old_discard_set_list:
+            discard_set_list.append(set(discard_set))
+
     # 开始单次时间片实验
     node_num = node_num - 1
+    json_file_name = settings.JSON_FILE_VER2
+    
+    pool = multiprocessing.Pool(5)
 
     experiment_iteration_max = 10e5
-    # experiment_iteration_max = 500
     learning_rate = settings.LEARNING_RATE
 
     white_gaussian_noise = settings.WHITE_GAUSSIAN_NOISE
     antenna_constant = settings.ANTENNA_CONSTANT
     path_loss_exponent = settings.PATH_LOSS_EXPONENT
     sub_channel_bandwidth = settings.SUB_CHANNEL_BANDWIDTH
-
-
 
     print_to_console("第" + str(iteration) + "迭代开始")
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -103,12 +177,6 @@ if __name__ == '__main__':
               单次迭代
           ————————————————————————————————————————————————————————————————————————————————————
         """
-        # print_to_console("第" + str(iteration) + "迭代开始")
-        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-        # 初始化策略列表
-        # print_to_console("迭代" + str(iteration) + " 初始化策略列表")
-        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         selected_strategy = dict()
         selected_strategy_no = dict()
 
@@ -119,66 +187,56 @@ if __name__ == '__main__':
         """
 
         for i in range(node_num):
-            # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            # print(str(i) + "选择策略开始")
+            # xxxx = i
             combination_and_strategy_length = combination_and_strategy_length_of_all_nodes[i]
 
             strategy_selection_probability = strategy_selection_probability_dict_list[i]
+            # xxxx1 = combination_and_strategy_length["length_of_strategy_list"][0]
+            # xxxx2 = strategy_selection_probability_dict_list[i]
+            # xxxx3 = discard_set_list[i]
             strategy_no = weighted_choice(combination_and_strategy_length["length_of_strategy_list"][0],
-                                          strategy_selection_probability_dict_list[i])
-            # print_to_console(strategy_no)
-            # print_to_console(combination_and_strategy_length["length_of_strategy_list"][0])
-            # print_to_console(strategy_selection_probability_dict_list[i])
-            x_base_num = decimal2xBase(decimal_num=strategy_no,
-                                       x_base=combination_and_strategy_length[
-                                           "length_of_combination"][0])
+                                          strategy_selection_probability_dict_list[i],
+                                          discard_set_list[i])
+
+            decimal_num = strategy_no
+            x_base = combination_and_strategy_length["length_of_combination"][0]
+            x_base_num = list()
+
+            if decimal_num < 0:
+                print_to_console("decimal_num < 0")
+
+            while True:
+                decimal_num, remainder = divmod(decimal_num, x_base)
+                x_base_num.append(remainder)
+                if decimal_num <= 0:
+                    break
+
+            x_base_num.reverse()
+
+            # x_base_num = decimal2xBase(decimal_num=strategy_no,
+            #                            x_base=combination_and_strategy_length[
+            #                                "length_of_combination"][0])
             strategy = constructor_of_strategy(x_base_num=x_base_num,
                                                combination=combination_and_strategy_length[
                                                    "combination_of_task_and_time"])
             selected_strategy[str(i)] = strategy
             selected_strategy_no[str(i)] = strategy_no
-        #
-        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        # print("选择策略完成")
 
         # 更新信道分配
         for i in range(len(selected_strategy)):
-            # print_to_console("selected_strategy",selected_strategy)
-            # print_to_console("len(selected_strategy)", len(selected_strategy))
-            # print_to_console("selected_strategy[str(i)]", selected_strategy[str(i)])
             useful_channel_under_node[i] = update_useful_channel(selected_strategy[str(i)],
                                                                  useful_channel_under_node[i])
 
-        # 计算激励值
-        # print_to_console("迭代" + str(iteration) + " 计算激励值")
-        # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         task_transmission_data_dict_of_all_nodes = dict()
 
         """
-        ——————————————————————————————————————————————————————————————————————————————————
-            多进程运行 计算传输数据量 
-        ——————————————————————————————————————————————————————————————————————————————————
+        ________________________________________________________________________________________________________________________________________-
+                    计算传输数据
+        *****************************************************************************************************************************************
         """
         node_type = settings.NODE_TYPE_FIXED
         for fixed_node_id in range(fixed_node_num):
-            """:cvar
-            ________________________________________________________________________________________________________________________________________-
-            """
-            # task_transmission_data = compute_task_transmission_data(task_id_list=task_id_under_each_node_list[i],
-            #                                                         strategy=selected_strategy[str(i)],
-            #                                                         node_type=node_type,
-            #                                                         node_no=i,
-            #                                                         fixed_node=fixed_edge_node,
-            #                                                         mobile_node=edge_vehicle_node,
-            #                                                         useful_channel_list_under_fixed_node=
-            #                                                         useful_channel_under_node[:fixed_node_num],
-            #                                                         useful_channel_list_under_mobile_node=
-            #                                                         useful_channel_under_node[fixed_node_num:],
-            #                                                         fixed_distance_matrix=fixed_distance_matrix,
-            #                                                         mobile_distance_matrix=mobile_distance_matrix)
-            """:cvar
-            *****************************************************************************************************************************************
-            """
+
             # print_to_console(task_id_under_each_node_list)
             task_id_list = task_id_under_each_node_list[fixed_node_id]
             node_strategy = selected_strategy[str(fixed_node_id)]
@@ -190,7 +248,8 @@ if __name__ == '__main__':
                 task_data_size = 0
 
                 for node_strategy_no in range(len(node_strategy)):  # 对于节点的每个信道上的分配
-                    allocated_channel_no = useful_channel_under_node[fixed_node_id]["node_channel"][node_strategy_no]  # 该行策略分配对应的信道编号
+                    allocated_channel_no = useful_channel_under_node[fixed_node_id]["node_channel"][
+                        node_strategy_no]  # 该行策略分配对应的信道编号
                     if task_id == node_strategy[node_strategy_no][0]:  # 为这个任务分配了信道
                         task_time = node_strategy[node_strategy_no][1]  # 信道的分配时长
 
@@ -253,21 +312,11 @@ if __name__ == '__main__':
                                           "task_data_size": task_data_size}
                 task_transmission_data_list.append(task_transmission_data)
 
-            """:cvar
-                       *****************************************************************************************************************************************
-                       """
             task_transmission_data_dict_of_all_nodes[str(fixed_node_id)] = task_transmission_data_list
 
         node_type = settings.NODE_TYPE_MOBILE
         for mobile_node_id in range(fixed_node_num, node_num):
 
-            """:cvar
-            *****************************************************************************************************************************************
-            """
-
-            """:cvar
-                        *****************************************************************************************************************************************
-            """
             task_id_list = task_id_under_each_node_list[mobile_node_id]
             node_strategy = selected_strategy[str(mobile_node_id)]
 
@@ -279,7 +328,8 @@ if __name__ == '__main__':
 
                 for node_strategy_no in range(len(node_strategy)):
 
-                    allocated_channel_no = useful_channel_under_node[mobile_node_id]["node_channel"][node_strategy_no]  # 该行策略分配对应的信道编号
+                    allocated_channel_no = useful_channel_under_node[mobile_node_id]["node_channel"][
+                        node_strategy_no]  # 该行策略分配对应的信道编号
 
                     if task_id == node_strategy[node_strategy_no][0]:
 
@@ -349,8 +399,11 @@ if __name__ == '__main__':
 
             task_transmission_data_dict_of_all_nodes[str(mobile_node_id)] = task_transmission_data_list
 
-        """:cvar
+        """
         *****************************************************************************************************************************************
+        计算 任务完成数
+        *****************************************************************************************************************************************
+
         """
 
         finished = np.zeros(len(task_list))
@@ -388,24 +441,29 @@ if __name__ == '__main__':
         # print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         potential_value_list = np.zeros(node_num)
         for i in range(node_num):
-            if str(i) in selected_strategy_no.keys():
-                strategy_selection_probability = strategy_selection_probability_dict_list[i]
-                potential_value = compute_potential_value(task_id_under_each_node_list[i], finished)
-                potential_value_list[i] = potential_value
-                probability_update_value = compute_probability_update_value(potential_value=potential_value,
-                                                                            max_potential_value=max_potential_value[
-                                                                                i])
-                strategy_no = selected_strategy_no[str(i)]
-                if strategy_no in strategy_selection_probability.keys():
-                    origin_probability = strategy_selection_probability[str(strategy_no)]
-                else:
-                    origin_probability = 1
-                new_probability = compute_updated_probability(origin_probability, learning_rate,
-                                                              probability_update_value)
-                if new_probability != 1.0:
-                    strategy_selection_probability_dict_list[i][str(strategy_no)] = new_probability
+            strategy_selection_probability = strategy_selection_probability_dict_list[i]
+            potential_value = compute_potential_value(task_id_under_each_node_list[i], finished)
+            potential_value_list[i] = potential_value
+            probability_update_value = compute_probability_update_value(potential_value=potential_value,
+                                                                        max_potential_value=max_potential_value[
+                                                                            i])
+            strategy_no = selected_strategy_no[str(i)]
+            if str(strategy_no) in strategy_selection_probability.keys():
+                origin_probability = strategy_selection_probability[str(strategy_no)]
+            else:
+                origin_probability = 1
+            new_probability = compute_updated_probability(origin_probability, learning_rate,
+                                                          probability_update_value)
+            if new_probability > 1:
+                strategy_selection_probability[str(strategy_no)] = new_probability
+            elif new_probability < 1:
+                if str(strategy_no) in strategy_selection_probability.keys():
+                    del strategy_selection_probability_dict_list[i][str(strategy_no)]
+                discard_set_list[i].add(strategy_no)
+            else:
+                pass
 
-                max_potential_value[i] = max(potential_value, max_potential_value[i])
+            max_potential_value[i] = max(potential_value, max_potential_value[i])
 
         iteration += 1
 
@@ -415,32 +473,83 @@ if __name__ == '__main__':
                 strategy_selection_probability_dict_list
                 """
 
-        if iteration < 0:
+        if iteration < 1000:
+            if iteration % 10 == 0:
+                print_to_console("迭代" + str(iteration) + " 结束")
+                print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-            print("Iteration" + str(iteration))
-            json.dump({"iteration": iteration,
-                       "finished": sum(finished),
-                       "potential_value_list": list(potential_value_list),
-                       "sum_max_potential_value": sum(max_potential_value),
-                       "max_potential_value": list(max_potential_value),
-                       "strategy_selection_probability_dict_list": list(strategy_selection_probability_dict_list)}, json_file)
-            json_file.write("\n")
-            print_to_console("写入完成")
-
-        else:
             if iteration % 100 == 0:
                 print_to_console("迭代" + str(iteration) + " 结束")
                 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-            if iteration % 1000 == 0:
+                new_discard_set_list = []
+                for discard_set in discard_set_list:
+                    new_discard_set_list.append(list(discard_set))
+
+                selected_strategy_no_list = []
+                for node_no in range(node_num):
+                    selected_strategy_no_list.append(selected_strategy_no[str(node_no)])
+
+                finished_num = 0
+                for isFinished in finished:
+                    if isFinished:
+                        finished_num += 1
+
+                json_dict = {"iteration": int(iteration),
+                             "finished_num": finished_num,
+                             "sum_max_potential_value": sum(max_potential_value),
+                             "strategy_selection_probability_dict_list": list(
+                                 strategy_selection_probability_dict_list),
+                             "strategy": selected_strategy_no,
+                             "finished": list(finished),
+                             "potential_value_list":list(potential_value_list),
+                             "max_potential_value": list(max_potential_value),
+                             "discard_set_list": new_discard_set_list}
+                # print_to_console(json_dict)
+                # print_to_console(type(json_dict))
+
+                pool.apply_async(write_json, args=(json_file_name, json_dict))
+                # json_process = multiprocessing.Process(target=write_json, args=(json_file_name, json_dict))
+                # json_process.start()
+                # json_process.join()
+                print_to_console( str(iteration) + " 写入JSON进程结束")
+
+        else:
+            if iteration % 10 == 0:
                 print_to_console("迭代" + str(iteration) + " 结束")
                 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                json.dump({"iteration": iteration,
-                           "finished": sum(finished),
-                           "potential_value_list": list(potential_value_list),
-                           "sum_max_potential_value": sum(max_potential_value),
-                           "max_potential_value": list(max_potential_value),
-                           "strategy_selection_probability_dict_list": list(strategy_selection_probability_dict_list)},
-                          json_file)
-                json_file.write("\n")
-                print_to_console("写入完成")
+
+            if iteration % 100 == 0:
+                print_to_console("迭代" + str(iteration) + " 结束")
+                print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+                new_discard_set_list = []
+                for discard_set in discard_set_list:
+                    new_discard_set_list.append(list(discard_set))
+
+                selected_strategy_no_list = []
+                for node_no in range(node_num):
+                    selected_strategy_no_list.append(selected_strategy_no[str(node_no)])
+
+                finished_num = 0
+                for isFinished in finished:
+                    if isFinished:
+                        finished_num += 1
+
+                json_dict = {"iteration": int(iteration),
+                             "finished_num": finished_num,
+                             "sum_max_potential_value": sum(max_potential_value),
+                             "strategy_selection_probability_dict_list": list(
+                                 strategy_selection_probability_dict_list),
+                             "strategy": selected_strategy_no,
+                             "finished": list(finished),
+                             "potential_value_list": list(potential_value_list),
+                             "max_potential_value": list(max_potential_value),
+                             "discard_set_list": new_discard_set_list}
+                # print_to_console(json_dict)
+                # print_to_console(type(json_dict))
+                pool.apply_async(write_json, args=(json_file_name, json_dict))
+                print_to_console(str(iteration) + " 写入JSON进程结束")
+
+    pool.close()
+    pool.join()

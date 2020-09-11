@@ -113,9 +113,9 @@ def get_task_id_under_edge_node(node_type, node_id, distance_matrix):
         raise ValueError("from init_distance.get_task_list_under_edge_node 节点类型出错， 不是指定的类型")
 
 
-def get_task_time_limitation_under_edge_node(node_type, node_id, distance_matrix_list, task_list):
+def get_task_time_limitation_under_edge_node(iteration, node_type, node_id, distance_matrix_list, task_list):
     task_id_list = []
-    for distance_matrix in distance_matrix_list:
+    for distance_matrix in distance_matrix_list[iteration:]:
         task_id = get_task_id_under_edge_node(node_type, node_id, distance_matrix)
         task_id_list.append(task_id)
     init_task_id = task_id_list[0]

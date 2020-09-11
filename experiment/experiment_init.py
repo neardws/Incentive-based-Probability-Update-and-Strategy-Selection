@@ -30,9 +30,7 @@ def print_to_console(msg, objective=None):
         print(type(objective))
 
 
-if __name__ == '__main__':
-    # TODO DEBUG
-
+def save(iteration):
     # 读取实验参数设置
     # fixed_edge_node = None
     # edge_vehicle_node = None
@@ -73,7 +71,6 @@ if __name__ == '__main__':
            ————————————————————————————————————————————————————————————————————————————————————
        """
     # 初始化迭代次数
-    iteration = 0
     fixed_distance_matrix = fixed_distance_matrix_list[iteration]
     mobile_distance_matrix = mobile_distance_matrix_list[iteration]
     task_list = task_by_time_list[iteration]
@@ -152,6 +149,7 @@ if __name__ == '__main__':
     for i in range(settings.BASE_STATION_NUM):
         print_to_console("初始化任务的时间限制 BASE_STATION " + str(i))
         task_time_limitation_under_edge_node = get_task_time_limitation_under_edge_node(
+            iteration=iteration,
             node_type=settings.NODE_TYPE_BASE_STATION,
             node_id=i,
             distance_matrix_list=fixed_distance_matrix_list,
@@ -161,6 +159,7 @@ if __name__ == '__main__':
     for i in range(settings.RSU_NUM):
         print_to_console("初始化任务的时间限制 RSU " + str(i))
         task_time_limitation_under_edge_node = get_task_time_limitation_under_edge_node(
+            iteration=iteration,
             node_type=settings.NODE_TYPE_RSU,
             node_id=i,
             distance_matrix_list=fixed_distance_matrix_list,
@@ -170,6 +169,7 @@ if __name__ == '__main__':
     for i in range(settings.EDGE_VEHICLE_NUM):
         print_to_console("初始化任务的时间限制 EDGE_VEHICLE " + str(i))
         task_time_limitation_under_edge_node = get_task_time_limitation_under_edge_node(
+            iteration=iteration,
             node_type=settings.NODE_TYPE_VEHICLE,
             node_id=i,
             distance_matrix_list=mobile_distance_matrix_list,
@@ -226,3 +226,13 @@ if __name__ == '__main__':
                                                     )
     if save_success:
         print("保存实验中间值成功")
+
+
+if __name__ == '__main__':
+
+    save(iteration=0)
+    save(iteration=1)
+    save(iteration=2)
+    save(iteration=3)
+    save(iteration=4)
+
