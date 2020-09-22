@@ -2,21 +2,21 @@
 
 ## 01 文件结构
 Incentive-based-Probability-Update-and-Strategy-Selection
-├─ LICENSE
-├─ README.md
-├─ algorithm
-│	├─ IPUSS.py
-│	├─ IPUSS_ver2.py
-│	├─ __init__.py
-│	├─ __pycache__
-│	│	├─ IPUSS.cpython-38.pyc
-│	│	├─ IPUSS_ver2.cpython-38.pyc
-│	│	├─ __init__.cpython-38.pyc
-│	│	├─ random_selection.cpython-38.pyc
-│	│	└─ water_filling.cpython-38.pyc
-│	├─ random_selection.py
-│	├─ water_filling.py
-│	└─ x.py
+  ├─ LICENSE
+  ├─ README.md
+  ├─ algorithm
+  │  	├─ IPUSS.py
+  │	    ├─ IPUSS_ver2.py
+  │   	├─ __init__.py
+  │  	├─ __pycache__
+  │  	│	├─ IPUSS.cpython-38.pyc
+  │  	│	├─ IPUSS_ver2.cpython-38.pyc
+  │  	│	├─ __init__.cpython-38.pyc
+  │  	│	├─ random_selection.cpython-38.pyc
+  │  	│	└─ water_filling.cpython-38.pyc
+  │  	├─ random_selection.py
+  │  	├─ water_filling.py
+  │  	└─ x.py
 ├─ config
 │	├─ __init__.py
 │	├─ __pycache__
