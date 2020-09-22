@@ -10,20 +10,11 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 │	├─ IPUSS.py
 │	├─ IPUSS_ver2.py
 │	├─ __init__.py
-│	├─ __pycache__
-│	│	├─ IPUSS.cpython-38.pyc
-│	│	├─ IPUSS_ver2.cpython-38.pyc
-│	│	├─ __init__.cpython-38.pyc
-│	│	├─ random_selection.cpython-38.pyc
-│	│	└─ water_filling.cpython-38.pyc
 │	├─ random_selection.py
 │	├─ water_filling.py
 │	└─ x.py
 ├─ config
 │	├─ __init__.py
-│	├─ __pycache__
-│	│	├─ __init__.cpython-38.pyc
-│	│	└─ config.cpython-38.pyc
 │	├─ config.py
 │	└─ settings.py
 ├─ data
@@ -39,9 +30,6 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 │	└─ roadNetwork.png
 ├─ experiment
 │	├─ __init__.py
-│	├─ __pycache__
-│	│	├─ __init__.cpython-38.pyc
-│	│	└─ experiment_save_and_reload.cpython-38.pyc
 │	├─ experiment_init.py
 │	├─ experiment_save_and_reload.py
 │	├─ one_slot_experiment.py
@@ -94,9 +82,6 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 │	 	└─ iteration_results_ver3.json
 ├─ experiment_results
 │	├─ __init__.py
-│	├─ __pycache__
-│	│	├─ __init__.cpython-38.pyc
-│	│	└─ strategy_evaluation.cpython-38.pyc
 │	├─ converage_analytics.py
 │	├─ get_compara_evaluation.py
 │	├─ get_ipus_evaluation.py
@@ -122,13 +107,6 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 │	└─ map.png
 ├─ init_input
 │	├─ __init__.py
-│	├─ __pycache__
-│	│	├─ __init__.cpython-38.pyc
-│	│	├─ experiment_input_save_and_reload.cpython-38.pyc
-│	│	├─ init_distance.cpython-38.pyc
-│	│	├─ init_edge_node.cpython-38.pyc
-│	│	├─ init_task_by_time.cpython-38.pyc
-│	│	└─ init_vehicles.cpython-38.pyc
 │	├─ experiment_input_save_and_reload.py
 │	├─ init_distance.py
 │	├─ init_edge_node.py
@@ -139,3 +117,24 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 	└─ __init__.py
 
 ```
+## 02 简介PPT
+![readme.pdf_1](powerpoint/image/readme.pdf_1.jpg)
+![readme.pdf_2](powerpoint/image/readme.pdf_2.jpg)
+![readme.pdf_3](powerpoint/image/readme.pdf_3.jpg)
+![readme.pdf_4](powerpoint/image/readme.pdf_4.jpg)
+![readme.pdf_5](powerpoint/image/readme.pdf_5.jpg)
+![readme.pdf_6](powerpoint/image/readme.pdf_6.jpg)
+![readme.pdf_7](powerpoint/image/readme.pdf_7.jpg)
+![readme.pdf_8](powerpoint/image/readme.pdf_8.jpg)
+![readme.pdf_9](powerpoint/image/readme.pdf_9.jpg)
+![readme.pdf_10](powerpoint/image/readme.pdf_10.jpg)
+![readme.pdf_11](powerpoint/image/readme.pdf_11.jpg)
+![readme.pdf_12](powerpoint/image/readme.pdf_12.jpg)
+![readme.pdf_13](powerpoint/image/readme.pdf_13.jpg)
+![readme.pdf_14](powerpoint/image/readme.pdf_14.jpg)
+![readme.pdf_15](powerpoint/image/readme.pdf_15.jpg)
+![readme.pdf_16](powerpoint/image/readme.pdf_16.jpg)
+![readme.pdf_17](powerpoint/image/readme.pdf_17.jpg)
+![readme.pdf_18](powerpoint/image/readme.pdf_18.jpg)
+![readme.pdf_19](powerpoint/image/readme.pdf_19.jpg)
+
