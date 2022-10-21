@@ -138,3 +138,21 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 ![readme.pdf_18](powerpoint/image/readme.pdf_18.jpg)
 ![readme.pdf_19](powerpoint/image/readme.pdf_19.jpg)
 
+## 引用本文
+
+```bibtex
+@article{xu2021potential,
+	language = {Chinese},
+	copyright = {Compilation and indexing terms, Copyright 2022 Elsevier Inc.},
+	copyright = {Compendex},
+	title = {Potential Game Based Channel Allocation for Vehicular Edge Computing},
+	journal = {Tien Tzu Hsueh Pao/Acta Electron. Sin.},
+	author = {Xu, Xincao and Liu, Kai and Liu, Chunhui and Jiang, Hao and Guo, Songtao and Wu, Weiwei},
+	volume = {49},
+	number = {5},
+	year = {2021},
+	pages = {851 - 860},
+	issn = {03722112},
+} 
+```
+
