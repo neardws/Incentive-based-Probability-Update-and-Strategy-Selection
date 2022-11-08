@@ -156,3 +156,20 @@ Incentive-based-Probability-Update-and-Strategy-Selection
 } 
 ```
 
+```bibtex
+@article{xu2021potential,
+  	author={许新操 and 刘凯 and 刘春晖 and 蒋豪 and 郭松涛 and 吴巍炜},
+	title = {基于势博弈的车载边缘计算信道分配方法},
+	publisher = {电子学报},
+	year = {2021},
+	journal = {电子学报},
+	volume = {49},
+	number = {5},
+	eid = {851},
+	pages = {851-860},
+	keywords = {车载边缘计算;信道分配;势博弈;分布式调度},
+	doi = https://www.ejournal.org.cn/CN/10.12263/DZXB.20200994
+}
+
+```
+
